@@ -1,0 +1,12 @@
+{
+  "domain": "eau_agur",
+  "name": "EAU par Agur",
+  "codeowners": [
+    "@acesyde"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/acesyde/hassio_agur_integration",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/acesyde/hassio_agur_integration/issues",
+  "version": "0.0.1"
+}

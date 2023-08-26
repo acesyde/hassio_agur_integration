@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "eau_agur"
+version = "0.0.6"
+description = "EAU par Agur integration for Home Assistant"
+authors = ["Pierre-Emmanuel Mercier <acesyde@gmail.com>"]
+license = "MIT"
+keywords = ["homeassistant", "hassio", "eau", "agur", "water"]
+readme = "README.md"
+repository = "https://github.com/acesyde/hassio_agur_integration"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+colorlog = "^6.7.0"
+aiohttp = "^3.8.5"
+homeassistant = "^2023.1.0"
+
+[tool.poetry.group.dev.dependencies]
+asynctest = "^0.13.0"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-socket = "^0.6.0"
+aioresponses = "^0.7.4"
+ruff = "^0.0.284"
+pre-commit = "^3.3.3"
+
+[virtualenvs]
+create = true
+in-project = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+exclude = [
+    ".venv"
+]
+
+[tool.pytest.ini_options]
+addopts = "-rxf -x -v -l --cov=./ --cov-report=xml"
+testpaths = [
+    "tests"
+]
