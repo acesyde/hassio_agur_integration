@@ -3,23 +3,25 @@ from __future__ import annotations
 
 import asyncio
 import json
-from socket import socket
+import socket
 from typing import Any, Mapping
 
 import aiohttp
 import async_timeout
 from yarl import URL
 
-from eau_agur.api import AgurApiConnectionError, AgurApiError
-from eau_agur.api.consts import BASE_URL, DEFAULT_TIMEOUT, ACCESS_KEY, CLIENT_ID, CONVERSATION_ID
+from .exceptions import AgurApiConnectionError, AgurApiError
+from .const import BASE_URL, DEFAULT_TIMEOUT, ACCESS_KEY, CLIENT_ID, CONVERSATION_ID, LOGIN_PATH, \
+    GENERATE_TOKEN_PATH, GET_DEFAULT_CONTRACT_PATH, GET_CONSUMPTION_PATH, BASE_PATH
 
 
-class AgurApiCLient:
+class AgurApiClient:
     """Main class for handling connections with the Agur API."""
 
     def __init__(
         self,
         host: str = BASE_URL,
+        base_path: str = BASE_PATH,
         timeout: int = DEFAULT_TIMEOUT,
         conversation_id: str = CONVERSATION_ID,
         client_id: str = CLIENT_ID,
@@ -27,10 +29,12 @@ class AgurApiCLient:
         session: aiohttp.ClientSession | None = None,
     ) -> None:
         """Initialize connection with the Agur API."""
+        self._token = None
         self._session = session
         self._close_session = False
 
         self._host = host
+        self._base_path = base_path
         self._timeout = timeout
         self._conversation_id = conversation_id
         self._client_id = client_id
@@ -41,17 +45,22 @@ class AgurApiCLient:
         uri: str,
         method: str = "GET",
         data: Any | None = None,
+        json_data: dict | None = None,
         params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
-        url = URL.build(scheme="https", host=self._host, path=uri)
+        url = URL.build(
+            scheme="https", host=self._host, path=self._base_path
+        ).join(URL(uri))
 
         headers = {
             "Content-Type": "application/json",
-            "Accept": "application/json",
             "Conversationid": self._conversation_id,
         }
+
+        if self._token is not None:
+            headers["Token"] = self._token
 
         if self._session is None:
             self._session = aiohttp.ClientSession()
@@ -63,6 +72,7 @@ class AgurApiCLient:
                     method,
                     url,
                     data=data,
+                    json=json_data,
                     params=params,
                     headers=headers,
                 )
@@ -80,13 +90,13 @@ class AgurApiCLient:
             contents = await response.read()
             response.close()
 
-        if content_type == "application/json":
+            if content_type == "application/json":
+                raise AgurApiError(
+                    response.status, json.loads(contents.decode("utf8"))
+                )
             raise AgurApiError(
-                response.status, json.loads(contents.decode("utf8"))
+                response.status, {"message": contents.decode("utf8")}
             )
-        raise AgurApiError(
-            response.status, {"message": contents.decode("utf8")}
-        )
 
         if "application/json" in content_type:
             return await response.json()
@@ -94,11 +104,76 @@ class AgurApiCLient:
         text = await response.text()
         return {"message": text}
 
+    async def generate_temporary_token(self) -> None:
+        """Generate a temporary token."""
+        try:
+            response = await self.request(
+                GENERATE_TOKEN_PATH,
+                "POST",
+                json_data={
+                    "AccessKey": self._access_key,
+                    "ClientId": self._client_id,
+                    "ConversationId": self._conversation_id
+                })
+
+            self._token = response["token"]
+
+        except AgurApiError as exception:
+            raise AgurApiError(
+                "Error occurred while generating temporary token."
+            ) from exception
+
+    async def login(self, username: str, password: str) -> None:
+        """Login to Agur API."""
+        try:
+            response = await self.request(
+                LOGIN_PATH,
+                "POST",
+                json_data={
+                    "identifiant": username,
+                    "motDePasse": password,
+                })
+
+            self._token = response["tokenAuthentique"]
+
+        except AgurApiError as exception:
+            raise AgurApiError(
+                "Error occurred while logging in."
+            ) from exception
+
+    async def get_default_contract(self) -> str:
+        """Get default contract."""
+        try:
+            response = await self.request(
+                GET_DEFAULT_CONTRACT_PATH,
+                "GET")
+
+            return response["numeroContrat"]
+
+        except AgurApiError as exception:
+            raise AgurApiError(
+                "Error occurred while getting default contract."
+            ) from exception
+
+    async def get_consumption(self, contract_id: str) -> float:
+        """Get consumption."""
+        try:
+            response = await self.request(
+                f"{GET_CONSUMPTION_PATH}{contract_id}",
+                "GET")
+
+            return response["valeurIndex"]
+
+        except AgurApiError as exception:
+            raise AgurApiError(
+                "Error occurred while getting consumption."
+            ) from exception
+
     async def __aenter__(self) -> AgurApiCLient:
         """Async enter.
 
         Returns:
-            The AdGuard Home object.
+            The AgurApiCLient object.
         """
         return self
 
