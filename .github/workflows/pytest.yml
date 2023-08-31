@@ -41,7 +41,7 @@ jobs:
           cache: 'poetry'
 
       - name: 📦 Install requirements
-        run: task install
+        run: task poetry-install
 
       - name: 🏃 Run tests
         env:

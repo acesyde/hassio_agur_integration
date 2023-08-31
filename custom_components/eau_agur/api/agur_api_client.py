@@ -10,7 +10,7 @@ import aiohttp
 import async_timeout
 from yarl import URL
 
-from .exceptions import AgurApiConnectionError, AgurApiError
+from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
 from .const import BASE_URL, DEFAULT_TIMEOUT, ACCESS_KEY, CLIENT_ID, CONVERSATION_ID, LOGIN_PATH, \
     GENERATE_TOKEN_PATH, GET_DEFAULT_CONTRACT_PATH, GET_CONSUMPTION_PATH, BASE_PATH
 
@@ -27,8 +27,9 @@ class AgurApiClient:
             client_id: str = CLIENT_ID,
             access_key: str = ACCESS_KEY,
             session: aiohttp.ClientSession | None = None,
-    ) -> None:
+    ) -> AgurApiClient:
         """Initialize connection with the Agur API."""
+
         self._token = None
         self._session = session
         self._close_session = False
@@ -123,20 +124,25 @@ class AgurApiClient:
                 "Error occurred while generating temporary token."
             ) from exception
 
-    async def login(self, username: str, password: str) -> bool:
+    async def login(self, email: str, password: str) -> bool:
         """Login to Agur API."""
         try:
             response = await self.request(
                 LOGIN_PATH,
                 "POST",
                 json_data={
-                    "identifiant": username,
+                    "identifiant": email,
                     "motDePasse": password,
                 })
 
             self._token = response["tokenAuthentique"]
 
         except AgurApiError as exception:
+            if exception.status == 401:
+                raise AgurApiUnauthorizedError(
+                    "Invalid credentials."
+                ) from exception
+
             raise AgurApiError(
                 "Error occurred while logging in."
             ) from exception

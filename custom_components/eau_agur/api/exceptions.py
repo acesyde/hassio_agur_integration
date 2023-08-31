@@ -7,3 +7,7 @@ class AgurApiError(Exception):
 
 class AgurApiConnectionError(AgurApiError):
     """Agur API connection exception."""
+
+
+class AgurApiUnauthorizedError(AgurApiError):
+    """Agur API unauthorized exception."""
