@@ -135,7 +135,6 @@ class AgurApiClient:
                 })
 
             self._token = response["tokenAuthentique"]
-            return True
 
         except AgurApiError as exception:
             raise AgurApiError(
