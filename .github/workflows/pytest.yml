@@ -48,8 +48,7 @@ jobs:
           PYTEST: true
         run: task tests
 
-      - name: 📤 Upload coverage to Codecov
-        if: ${{ matrix.python_version == '3.11' }}
-        run: |
-          task coverage
-          curl -sfSL https://codecov.io/bash | bash -
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
