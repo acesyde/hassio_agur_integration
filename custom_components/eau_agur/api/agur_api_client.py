@@ -19,14 +19,14 @@ class AgurApiClient:
     """Main class for handling connections with the Agur API."""
 
     def __init__(
-        self,
-        host: str = BASE_URL,
-        base_path: str = BASE_PATH,
-        timeout: int = DEFAULT_TIMEOUT,
-        conversation_id: str = CONVERSATION_ID,
-        client_id: str = CLIENT_ID,
-        access_key: str = ACCESS_KEY,
-        session: aiohttp.ClientSession | None = None,
+            self,
+            host: str = BASE_URL,
+            base_path: str = BASE_PATH,
+            timeout: int = DEFAULT_TIMEOUT,
+            conversation_id: str = CONVERSATION_ID,
+            client_id: str = CLIENT_ID,
+            access_key: str = ACCESS_KEY,
+            session: aiohttp.ClientSession | None = None,
     ) -> None:
         """Initialize connection with the Agur API."""
         self._token = None
@@ -41,12 +41,12 @@ class AgurApiClient:
         self._access_key = access_key
 
     async def request(
-        self,
-        uri: str,
-        method: str = "GET",
-        data: Any | None = None,
-        json_data: dict | None = None,
-        params: Mapping[str, str] | None = None,
+            self,
+            uri: str,
+            method: str = "GET",
+            data: Any | None = None,
+            json_data: dict | None = None,
+            params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
@@ -123,7 +123,7 @@ class AgurApiClient:
                 "Error occurred while generating temporary token."
             ) from exception
 
-    async def login(self, username: str, password: str) -> None:
+    async def login(self, username: str, password: str) -> bool:
         """Login to Agur API."""
         try:
             response = await self.request(
@@ -135,6 +135,7 @@ class AgurApiClient:
                 })
 
             self._token = response["tokenAuthentique"]
+            return True
 
         except AgurApiError as exception:
             raise AgurApiError(
@@ -169,7 +170,7 @@ class AgurApiClient:
                 "Error occurred while getting consumption."
             ) from exception
 
-    async def __aenter__(self) -> AgurApiCLient:
+    async def __aenter__(self) -> Any:
         """Async enter.
 
         Returns:
