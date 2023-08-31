@@ -15,6 +15,12 @@ repos:
     rev: v0.0.286
     hooks:
       - id: ruff
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: no-commit-to-branch
+        args:
+          - --branch=main
   - repo: local
     hooks:
       - id: test
