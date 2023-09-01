@@ -4,6 +4,7 @@ from unittest.mock import patch
 import aiohttp
 import pytest
 from aresponses import ResponsesMockServer
+
 from custom_components.eau_agur.api import AgurApiClient
 from custom_components.eau_agur.api.exceptions import AgurApiError, AgurApiConnectionError
 

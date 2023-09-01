@@ -2,9 +2,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from eau_agur.api import AgurApiClient
-from eau_agur.const import DOMAIN, PLATFORMS, COORDINATOR
-from eau_agur.coordinator import EauAgurDataUpdateCoordinator
+from .api import AgurApiClient
+from .const import DOMAIN, PLATFORMS, COORDINATOR
+from .coordinator import EauAgurDataUpdateCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

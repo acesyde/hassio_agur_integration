@@ -4,8 +4,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from eau_agur.api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
-from eau_agur.const import SCAN_INTERVAL_IN_MINUTES, DOMAIN, LOGGER
+from .api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
+from .const import SCAN_INTERVAL_IN_MINUTES, DOMAIN, LOGGER
 
 
 class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
