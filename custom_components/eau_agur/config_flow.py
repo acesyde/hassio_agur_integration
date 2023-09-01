@@ -26,14 +26,14 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     session=async_create_clientsession(self.hass),
                 )
 
-                api_client.generate_temporary_token()
+                await api_client.generate_temporary_token()
 
-                api_client.login(
+                await api_client.login(
                     user_input[CONF_EMAIL],
                     user_input[CONF_PASSWORD],
                 )
 
-                default_contract_id = api_client.get_default_contract()
+                default_contract_id = await api_client.get_default_contract()
 
                 data = {
                     CONF_EMAIL: user_input[CONF_EMAIL],
