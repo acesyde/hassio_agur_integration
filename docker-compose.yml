@@ -3,7 +3,7 @@ version: '3'
 services:
   hassio:
     image: ghcr.io/home-assistant/home-assistant:stable
-    container_name: hassio
+    container_name: hassio_agur_integration
     environment:
         - TZ=Europe/Paris
     ports:

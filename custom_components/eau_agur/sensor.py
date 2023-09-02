@@ -9,10 +9,9 @@ from homeassistant.const import UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from eau_agur import DOMAIN
-from eau_agur.const import COORDINATOR
-from eau_agur.coordinator import EauAgurDataUpdateCoordinator
-from eau_agur.entity import EauAgurEntity
+from .const import COORDINATOR, LOGGER, DOMAIN
+from .coordinator import EauAgurDataUpdateCoordinator
+from .entity import EauAgurEntity
 
 
 @dataclass
@@ -30,17 +29,17 @@ class EauAgurEntityDescription(
     """Describes Eau par Agur sensor entity."""
 
 
-SENSORS: tuple[EauAgurEntityDescription, ...] = (
+SENSORS = [
     EauAgurEntityDescription(
-        key="total_liter_m3",
-        translation_key="total_liter_m3",
-        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
+        key="total_m3",
+        translation_key="total_m3",
         icon="mdi:gauge",
+        native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=lambda data: data or None,
+        value_fn=lambda data: data["consumption"] or None,
     )
-)
+]
 
 
 async def async_setup_entry(
@@ -52,14 +51,20 @@ async def async_setup_entry(
 
     coordinator = hass.data[DOMAIN][entry.entry_id][COORDINATOR]
 
-    async_add_entities(
-        EauAgurSensor(
-            entry_id=entry.entry_id,
-            coordinator=coordinator,
-            entity_description=entity_description,
+    entities = []
+
+    for entity_description in SENSORS:
+        entities.append(
+            EauAgurSensor(
+                entry_id=entry.entry_id,
+                coordinator=coordinator,
+                entity_description=entity_description,
+            )
         )
-        for entity_description in SENSORS
-    )
+
+    LOGGER.debug("async_setup_entry adding %d entities", len(entities))
+
+    async_add_entities(entities)
 
 
 class EauAgurSensor(EauAgurEntity, SensorEntity):
@@ -69,7 +74,7 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
             self,
             entry_id: str,
             coordinator: EauAgurDataUpdateCoordinator,
-            entity_description: EauAgurEntityDescription,
+            entity_description: SensorEntityDescription,
     ) -> None:
         """Initialize Eau par Agur sensor."""
         super().__init__(coordinator)

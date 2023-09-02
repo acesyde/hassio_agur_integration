@@ -6,3 +6,4 @@ logger:
   default: info
   logs:
     custom_components.eau_agur: debug
+    custom_components.eau_agur.api: debug

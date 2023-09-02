@@ -1,8 +1,8 @@
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from eau_agur.const import ATTRIBUTION, DOMAIN, NAME, VERSION
-from eau_agur.coordinator import EauAgurDataUpdateCoordinator
+from .const import ATTRIBUTION, DOMAIN, NAME, VERSION
+from .coordinator import EauAgurDataUpdateCoordinator
 
 
 class EauAgurEntity(CoordinatorEntity):

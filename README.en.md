@@ -15,9 +15,9 @@ English
 
 **This integration will set up the following platforms.**
 
-| Platform                | Description      | Unit | Implemented        |
-|-------------------------|------------------|------|--------------------|
-| `sensor.total_liter_m3` | Number of liters | m3   | :white_check_mark: |
+| Platform          | Description  | Unit | Implemented        |
+|-------------------|--------------|------|--------------------|
+| `sensor.total_m3` | Number of m3 | m3   | :white_check_mark: |
 
 ## Installation
 

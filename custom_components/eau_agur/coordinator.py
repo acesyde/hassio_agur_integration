@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,23 +17,25 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, api_client: AgurApiClient, entry: ConfigEntry):
         """Initialize the coordinator."""
 
-        super().__init__(
-            hass,
-            logger=LOGGER,
-            name=DOMAIN,
-            update_interval=SCAN_INTERVAL_IN_MINUTES,
-        )
-
         self._api_client = api_client
         self._email = entry.data.get(CONF_EMAIL)
         self._password = entry.data.get(CONF_PASSWORD)
         self._password = entry.data.get(CONF_PASSWORD)
         self._contract_number = entry.data.get(CONF_CONTRACT_NUMBER)
 
+        super().__init__(
+            hass,
+            logger=LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(minutes=SCAN_INTERVAL_IN_MINUTES),
+        )
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data via library."""
 
         try:
+            LOGGER.debug("Updating data from API")
+
             # Refresh the token and login if needed
             await self._api_client.generate_temporary_token()
             await self._api_client.login(self._email, self._password)

@@ -12,7 +12,7 @@ from yarl import URL
 
 from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
 from .const import BASE_URL, DEFAULT_TIMEOUT, ACCESS_KEY, CLIENT_ID, CONVERSATION_ID, LOGIN_PATH, \
-    GENERATE_TOKEN_PATH, GET_DEFAULT_CONTRACT_PATH, GET_CONSUMPTION_PATH, BASE_PATH
+    GENERATE_TOKEN_PATH, GET_DEFAULT_CONTRACT_PATH, GET_CONSUMPTION_PATH, BASE_PATH, LOGGER
 
 
 class AgurApiClient:
@@ -41,12 +41,16 @@ class AgurApiClient:
         self._client_id = client_id
         self._access_key = access_key
 
+        if self._base_path[-1] != "/":
+            self._base_path += "/"
+
     async def request(
             self,
             uri: str,
             method: str = "GET",
             data: Any | None = None,
             json_data: dict | None = None,
+            headers: dict[str, str] | None = None,
             params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
@@ -55,17 +59,20 @@ class AgurApiClient:
             scheme="https", host=self._host, path=self._base_path
         ).join(URL(uri))
 
-        headers = {
-            "Content-Type": "application/json",
-            "Conversationid": self._conversation_id,
-        }
+        LOGGER.debug("URL: %s", url)
+
+        if headers is None:
+            headers: dict[str, Any] = {}
+
+        headers["Content-Type"] = "application/json"
+        headers["Conversationid"] = self._conversation_id
 
         if self._token is not None:
             headers["Token"] = self._token
 
         if self._session is None:
             self._session = aiohttp.ClientSession()
-            self._close_session = True
+        self._close_session = True
 
         try:
             async with async_timeout.timeout(self._timeout):
@@ -109,8 +116,11 @@ class AgurApiClient:
         """Generate a temporary token."""
         try:
             response = await self.request(
-                GENERATE_TOKEN_PATH,
-                "POST",
+                uri=GENERATE_TOKEN_PATH,
+                method="POST",
+                headers={
+                    "token": self._access_key,
+                },
                 json_data={
                     "AccessKey": self._access_key,
                     "ClientId": self._client_id,
@@ -128,8 +138,8 @@ class AgurApiClient:
         """Login to Agur API."""
         try:
             response = await self.request(
-                LOGIN_PATH,
-                "POST",
+                uri=LOGIN_PATH,
+                method="POST",
                 json_data={
                     "identifiant": email,
                     "motDePasse": password,
@@ -151,8 +161,8 @@ class AgurApiClient:
         """Get default contract."""
         try:
             response = await self.request(
-                GET_DEFAULT_CONTRACT_PATH,
-                "GET")
+                uri=GET_DEFAULT_CONTRACT_PATH,
+                method="GET")
 
             return response["numeroContrat"]
 

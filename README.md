@@ -15,13 +15,13 @@ Français |
 
 **L'intégration ajoutera les composants suivants.**
 
-| Platform                | Description              | Unit | Implemented        |
-|-------------------------|--------------------------|------|--------------------|
-| `sensor.total_liter_m3` | Nombre de litre consommé | m3   | :white_check_mark: |
+| Platform          | Description           | Unit | Implemented        |
+|-------------------|-----------------------|------|--------------------|
+| `sensor.total_m3` | Nombre de m3 consommé | m3   | :white_check_mark: |
 
 ## Installation
 
-## Automatiique
+## Automatique
 
 [![Ouvrez votre instance Home Assistant et ajouter un dépôt personnalisé.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
 
