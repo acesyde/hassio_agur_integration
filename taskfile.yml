@@ -1,29 +1,33 @@
-  version: 3
+version: 3
 
-  tasks:
-    tests:
-      env:
-        PYTEST: true
-      cmds:
-        - poetry run pytest -rxf -x -v -l --cov=./ --cov-report=xml
+tasks:
+  tests:
+    env:
+      PYTEST: true
+    cmds:
+      - poetry run pytest -rxf -x -v -l --cov=./ --cov-report=xml
 
-    coverage:
-      deps:
-        - tests
-      cmds:
-        - poetry run coverage report --skip-covered
+  coverage:
+    deps:
+      - tests
+    cmds:
+      - poetry run coverage report --skip-covered
 
-    develop:
-      cmds:
-        - docker-compose -f docker-compose.yml up
+  develop:
+    cmds:
+      - docker-compose -f docker-compose.yml up
 
-    install:
-      cmds:
-        - poetry install
+  poetry-install:
+    cmds:
+      - poetry install
 
-    setup:
-      cmds:
-        - poetry shell
-        - task: install
-        - pre-commit install --install-hooks
-        - pre-commit install --hook-type commit-msg --hook-type pre-push
+  setup:
+    cmds:
+      - poetry shell
+      - task: poetry-install
+      - task: pre-commit-install
+
+  pre-commit-install:
+    cmds:
+      - pre-commit install --install-hooks
+      - pre-commit install --hook-type commit-msg --hook-type pre-push

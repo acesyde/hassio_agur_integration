@@ -11,18 +11,20 @@ repository = "https://github.com/acesyde/hassio_agur_integration"
 [tool.poetry.dependencies]
 python = "^3.10"
 colorlog = "^6.7.0"
-aiohttp = "^3.8.5"
 homeassistant = "^2023.1.0"
+requests = "^2.31.0"
+aiohttp = "^3.8.5"
+yarl = "^1.9.2"
 
 [tool.poetry.group.dev.dependencies]
 asynctest = "^0.13.0"
 pytest = "^7.4.0"
-pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
 pytest-socket = "^0.6.0"
-aioresponses = "^0.7.4"
 ruff = "^0.0.286"
 pre-commit = "^3.3.3"
+aresponses = "^2.1.6"
+vulture = "^2.9.1"
 
 [virtualenvs]
 create = true
@@ -40,3 +42,8 @@ addopts = "-rxf -x -v -l --cov=./ --cov-report=xml"
 testpaths = [
     "tests"
 ]
+
+[tool.vulture]
+min_confidence = 80
+paths = ["custom_components", "tests"]
+verbose = true
