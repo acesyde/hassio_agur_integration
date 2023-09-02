@@ -13,3 +13,6 @@ VERSION = "0.0.1"
 COORDINATOR = "coordinator"
 ATTRIBUTION = "Data provided by https://www.agur.fr/"
 SCAN_INTERVAL_IN_MINUTES = 60 * 6  # 6 hours
+
+# Configuration
+CONF_CONTRACT_NUMBER = "contract_number"

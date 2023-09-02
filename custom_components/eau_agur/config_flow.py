@@ -8,7 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers import selector
 
 from .api import AgurApiClient, AgurApiError, AgurApiConnectionError, AgurApiUnauthorizedError
-from .const import DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER, CONF_CONTRACT_NUMBER
 
 
 class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -38,6 +38,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 data = {
                     CONF_EMAIL: user_input[CONF_EMAIL],
                     CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    CONF_CONTRACT_NUMBER: default_contract_id,
                 }
 
                 await self.async_set_unique_id(

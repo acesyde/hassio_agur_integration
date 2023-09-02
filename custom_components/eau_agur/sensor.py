@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Callable, Any
 
@@ -36,7 +38,7 @@ SENSORS: tuple[EauAgurEntityDescription, ...] = (
         icon="mdi:gauge",
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=lambda data: data / 1000 or None,
+        value_fn=lambda data: data or None,
     )
 )
 
