@@ -7,35 +7,39 @@
 [![hacs][hacsbadge]][hacs]
 ![Project Maintenance][maintenance-shield]
 
-_Integration to integrate with [EAU par Agur][eau_agur]._
+_Intégration pour [EAU par Agur][eau_agur]._
 
-**This integration will set up the following platforms.**
+🌏
+Français |
+[**English**](README.en.md)
 
-| Platform      | Description | Unit | Implemented        |
-| ------------- | ----------- | ---- | ------------------ |
-| `sensor.xxxx` | xxxxx.      | xxx  | :white_check_mark: |
+**L'intégration ajoutera les composants suivants.**
+
+| Platform                | Description              | Unit | Implemented        |
+|-------------------------|--------------------------|------|--------------------|
+| `sensor.total_liter_m3` | Nombre de litre consommé | m3   | :white_check_mark: |
 
 ## Installation
 
-## Automatic
+## Automatiique
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
+[![Ouvrez votre instance Home Assistant et ajouter un dépôt personnalisé.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
 
-## Manual
+## Manuelle
 
-1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
-2. If you do not have a `custom_components` directory (folder) there, you need to create it.
-3In the `custom_components` directory (folder) create a new folder called `eau_agur`.
-3. Download _all_ the files from the `custom_components/eau_agur/` directory (folder) in this repository.
-4. Place the files you downloaded in the new directory (folder) you created.
-5. Restart Home Assistant
-6. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "EAU par Agur"
+1. À l'aide de l'outil de votre choix, ouvrez le répertoire (dossier) de votre configuration HA (où vous
+   trouvez `configuration.yaml`).
+2. Si vous n'avez pas le répertoire `custom_components`, il vous faudra le créer.
+3. Dans le répertoire `custom_components`, créez un nouveau dossier nommé `eau_agur`.
+4. Téléchargez _tous_ les fichiers du répertoire (dossier) `custom_components/eau_agur/` dans ce référentiel.
+5. Placez les fichiers que vous avez téléchargés dans le nouveau répertoire (dossier) que vous avez créé.
+6. Redémarrer Home Assistant.
+7. Dans l'interface utilisateur HA, allez dans "Configuration" -> "Intégrations", cliquez sur "+" et recherchez "EAU par
+   Agur".
 
-## Configuration is done in the UI
+## Les contributions sont les bienvenues !
 
-## Contributions are welcome!
-
-If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
+Si vous souhaitez y contribuer, veuillez lire les [Directives de contribution](CONTRIBUTING.md)
 
 ***
 
