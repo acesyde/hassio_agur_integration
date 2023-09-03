@@ -41,7 +41,7 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             await self._api_client.login(self._email, self._password)
 
             # Get the consumption data
-            result = {"consumption": await self._api_client.get_consumption(self._contract_number) / 1000}
+            result = {"consumption": await self._api_client.get_consumption(self._contract_number)}
 
             return result
 

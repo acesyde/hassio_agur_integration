@@ -19,13 +19,16 @@ Français |
 |-------------------|-----------------------|------|--------------------|
 | `sensor.total_m3` | Nombre de m3 consommé | m3   | :white_check_mark: |
 
+> [!NOTE]
+> Les données sont mises à jour toutes les 24h.
+
 ## Installation
 
-## Automatique
+### Automatique
 
 [![Ouvrez votre instance Home Assistant et ajouter un dépôt personnalisé.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
 
-## Manuelle
+### Manuelle
 
 1. À l'aide de l'outil de votre choix, ouvrez le répertoire (dossier) de votre configuration HA (où vous
    trouvez `configuration.yaml`).
