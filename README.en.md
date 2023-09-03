@@ -19,13 +19,16 @@ English
 |-------------------|--------------|------|--------------------|
 | `sensor.total_m3` | Number of m3 | m3   | :white_check_mark: |
 
+> [!NOTE]
+> Data is updated every 24h.
+
 ## Installation
 
-## Automatic
+### Automatic
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
 
-## Manual
+### Manual
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
 2. If you do not have a `custom_components` directory (folder) there, you need to create it.

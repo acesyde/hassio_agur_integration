@@ -29,6 +29,13 @@ class EauAgurEntityDescription(
     """Describes Eau par Agur sensor entity."""
 
 
+def read_consumption(data: dict[str, Any]):
+    consumption = data["consumption"]
+    if consumption is not None and consumption >= 0:
+        return consumption / 1000
+    return None
+
+
 SENSORS = [
     EauAgurEntityDescription(
         key="total_m3",
@@ -37,7 +44,7 @@ SENSORS = [
         native_unit_of_measurement=UnitOfVolume.CUBIC_METERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=lambda data: data["consumption"] or None,
+        value_fn=read_consumption,
     )
 ]
 
