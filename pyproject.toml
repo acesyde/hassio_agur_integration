@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eau_agur"
-version = "0.0.2"
+version = "0.0.3"
 description = "EAU par Agur integration for Home Assistant"
 authors = ["Pierre-Emmanuel Mercier <acesyde@gmail.com>"]
 license = "MIT"

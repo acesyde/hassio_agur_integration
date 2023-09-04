@@ -15,9 +15,9 @@ Français |
 
 **L'intégration ajoutera les composants suivants.**
 
-| Platform          | Description           | Unit | Implemented        |
-|-------------------|-----------------------|------|--------------------|
-| `sensor.total_m3` | Nombre de m3 consommé | m3   | :white_check_mark: |
+| Platform              | Description                | Unit | Implemented        |
+| --------------------- | -------------------------- | ---- | ------------------ |
+| `sensor.total_liters` | Nombre de litres consommés | m3   | :white_check_mark: |
 
 > [!NOTE]
 > Les données sont mises à jour toutes les 24h.

@@ -15,9 +15,9 @@ English
 
 **This integration will set up the following platforms.**
 
-| Platform          | Description  | Unit | Implemented        |
-|-------------------|--------------|------|--------------------|
-| `sensor.total_m3` | Number of m3 | m3   | :white_check_mark: |
+| Platform              | Description      | Unit | Implemented        |
+| --------------------- | ---------------- | ---- | ------------------ |
+| `sensor.total_liters` | Number of liters | m3   | :white_check_mark: |
 
 > [!NOTE]
 > Data is updated every 24h.
