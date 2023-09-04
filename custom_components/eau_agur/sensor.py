@@ -32,10 +32,10 @@ class EauAgurEntityDescription(
 def read_consumption(data: dict[str, Any]):
     """Read consumption from data."""
 
-    consumption: str = data["consumption"]
+    consumption: float | None = data["consumption"]
 
-    if consumption is not None and consumption.isdigit():
-        return float(consumption)
+    if consumption is not None and consumption > 0:
+        return consumption
     return None
 
 
@@ -44,6 +44,7 @@ SENSORS = [
         key="total_liters",
         translation_key="total_liters",
         icon="mdi:gauge",
+        native_unit_of_measurement=UnitOfVolume.LITERS,
         unit_of_measurement=UnitOfVolume.LITERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
