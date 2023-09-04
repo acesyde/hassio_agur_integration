@@ -17,8 +17,8 @@
   },
   "entity": {
     "sensor": {
-      "total_m3": {
-        "name": "Total m3"
+      "total_liters": {
+        "name": "Total liters"
       }
     }
   }
