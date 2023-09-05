@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import datetime
 from typing import Callable, Any
 
-from homeassistant.components.sensor import SensorEntityDescription, SensorDeviceClass, SensorStateClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorEntityDescription,
+    SensorDeviceClass,
+    SensorStateClass,
+    SensorEntity,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfVolume
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import COORDINATOR, LOGGER, DOMAIN
@@ -22,17 +28,14 @@ class EauAgurEntityDescriptionMixin:
 
 
 @dataclass
-class EauAgurEntityDescription(
-    SensorEntityDescription,
-    EauAgurEntityDescriptionMixin
-):
+class EauAgurEntityDescription(SensorEntityDescription, EauAgurEntityDescriptionMixin):
     """Describes Eau par Agur sensor entity."""
 
 
 def read_consumption(data: dict[str, Any]):
     """Read consumption from data."""
 
-    consumption: float | None = data["consumption"]
+    consumption: float | None = data["consumption"]["valeurIndex"]
 
     if consumption is not None and consumption > 0:
         return consumption
@@ -48,7 +51,7 @@ SENSORS = [
         unit_of_measurement=UnitOfVolume.LITERS,
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=read_consumption,
+        value_fn=lambda data: read_consumption(data),
     )
 ]
 
@@ -102,3 +105,16 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
     def available(self) -> bool:
         """Return True if last update was successful."""
         return self.coordinator.last_update_success
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        if self.coordinator.data is None:
+            return
+
+        last_statement: datetime | None = self.coordinator.data["consumption"]["dateReleve"]
+
+        if last_statement is not None:
+            self._attr_last_reset = last_statement.isoformat()
+
+        super()._handle_coordinator_update()

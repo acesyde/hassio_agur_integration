@@ -11,22 +11,33 @@ import async_timeout
 from yarl import URL
 
 from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
-from .const import BASE_URL, DEFAULT_TIMEOUT, ACCESS_KEY, CLIENT_ID, CONVERSATION_ID, LOGIN_PATH, \
-    GENERATE_TOKEN_PATH, GET_DEFAULT_CONTRACT_PATH, GET_CONSUMPTION_PATH, BASE_PATH, LOGGER
+from .const import (
+    BASE_URL,
+    DEFAULT_TIMEOUT,
+    ACCESS_KEY,
+    CLIENT_ID,
+    CONVERSATION_ID,
+    LOGIN_PATH,
+    GENERATE_TOKEN_PATH,
+    GET_DEFAULT_CONTRACT_PATH,
+    GET_CONSUMPTION_PATH,
+    BASE_PATH,
+    LOGGER,
+)
 
 
 class AgurApiClient:
     """Main class for handling connections with the Agur API."""
 
     def __init__(
-            self,
-            host: str = BASE_URL,
-            base_path: str = BASE_PATH,
-            timeout: int = DEFAULT_TIMEOUT,
-            conversation_id: str = CONVERSATION_ID,
-            client_id: str = CLIENT_ID,
-            access_key: str = ACCESS_KEY,
-            session: aiohttp.ClientSession | None = None,
+        self,
+        host: str = BASE_URL,
+        base_path: str = BASE_PATH,
+        timeout: int = DEFAULT_TIMEOUT,
+        conversation_id: str = CONVERSATION_ID,
+        client_id: str = CLIENT_ID,
+        access_key: str = ACCESS_KEY,
+        session: aiohttp.ClientSession | None = None,
     ) -> AgurApiClient:
         """Initialize connection with the Agur API."""
 
@@ -45,19 +56,19 @@ class AgurApiClient:
             self._base_path += "/"
 
     async def request(
-            self,
-            uri: str,
-            method: str = "GET",
-            data: Any | None = None,
-            json_data: dict | None = None,
-            headers: dict[str, str] | None = None,
-            params: Mapping[str, str] | None = None,
+        self,
+        uri: str,
+        method: str = "GET",
+        data: Any | None = None,
+        json_data: dict | None = None,
+        headers: dict[str, str] | None = None,
+        params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
-        url = URL.build(
-            scheme="https", host=self._host, path=self._base_path
-        ).join(URL(uri))
+        url = URL.build(scheme="https", host=self._host, path=self._base_path).join(
+            URL(uri)
+        )
 
         LOGGER.debug("URL: %s", url)
 
@@ -99,12 +110,8 @@ class AgurApiClient:
             response.close()
 
             if content_type == "application/json":
-                raise AgurApiError(
-                    response.status, json.loads(contents.decode("utf8"))
-                )
-            raise AgurApiError(
-                response.status, {"message": contents.decode("utf8")}
-            )
+                raise AgurApiError(response.status, json.loads(contents.decode("utf8")))
+            raise AgurApiError(response.status, {"message": contents.decode("utf8")})
 
         if "application/json" in content_type:
             return await response.json()
@@ -124,8 +131,9 @@ class AgurApiClient:
                 json_data={
                     "AccessKey": self._access_key,
                     "ClientId": self._client_id,
-                    "ConversationId": self._conversation_id
-                })
+                    "ConversationId": self._conversation_id,
+                },
+            )
 
             self._token = response["token"]
 
@@ -143,26 +151,21 @@ class AgurApiClient:
                 json_data={
                     "identifiant": email,
                     "motDePasse": password,
-                })
+                },
+            )
 
             self._token = response["tokenAuthentique"]
 
         except AgurApiError as exception:
             if exception.status == 401:
-                raise AgurApiUnauthorizedError(
-                    "Invalid credentials."
-                ) from exception
+                raise AgurApiUnauthorizedError("Invalid credentials.") from exception
 
-            raise AgurApiError(
-                "Error occurred while logging in."
-            ) from exception
+            raise AgurApiError("Error occurred while logging in.") from exception
 
     async def get_default_contract(self) -> str:
         """Get default contract."""
         try:
-            response = await self.request(
-                uri=GET_DEFAULT_CONTRACT_PATH,
-                method="GET")
+            response = await self.request(uri=GET_DEFAULT_CONTRACT_PATH, method="GET")
 
             return response["numeroContrat"]
 
@@ -171,14 +174,15 @@ class AgurApiClient:
                 "Error occurred while getting default contract."
             ) from exception
 
-    async def get_consumption(self, contract_id: str) -> float:
+    async def get_consumption(self, contract_id: str) -> dict[str, Any]:
         """Get consumption."""
         try:
-            response = await self.request(
-                f"{GET_CONSUMPTION_PATH}{contract_id}",
-                "GET")
+            response = await self.request(f"{GET_CONSUMPTION_PATH}{contract_id}", "GET")
 
-            return response["valeurIndex"]
+            return {
+                "valeurIndex": response["valeurIndex"],
+                "dateReleve": response["dateReleve"],
+            }
 
         except AgurApiError as exception:
             raise AgurApiError(
