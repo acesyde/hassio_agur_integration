@@ -18,7 +18,7 @@ yarl = "^1.9.2"
 
 [tool.poetry.group.dev.dependencies]
 asynctest = "^0.13.0"
-pytest = "^7.4.0"
+pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 pytest-socket = "^0.6.0"
 ruff = "^0.0.286"
