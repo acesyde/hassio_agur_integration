@@ -24,7 +24,7 @@ pytest-socket = "^0.6.0"
 ruff = "^0.0.286"
 pre-commit = "^3.3.3"
 aresponses = "^2.1.6"
-vulture = "^2.9.1"
+vulture = "^2.10"
 
 [virtualenvs]
 create = true
