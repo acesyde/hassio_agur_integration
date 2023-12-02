@@ -22,8 +22,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                default_provider = PROVIDERS["agur"]
-                config_provider = PROVIDERS.get(user_input[CONF_PROVIDER], default_provider)
+                config_provider = PROVIDERS.get(user_input[CONF_PROVIDER], None)
                 if config_provider is None:
                     raise AgurApiError("Provider not found")
 
