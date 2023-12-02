@@ -14,12 +14,7 @@ HOST_PATTERN = "example.com"
 @pytest.mark.asyncio
 async def test_json_request(aresponses: ResponsesMockServer) -> None:
     """Test JSON response is handled correctly."""
-    aresponses.add(
-        HOST_PATTERN,
-        "/",
-        "GET",
-        response={"message": "Hello World!"}
-    )
+    aresponses.add(HOST_PATTERN, "/", "GET", response={"message": "Hello World!"})
 
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
@@ -31,12 +26,7 @@ async def test_json_request(aresponses: ResponsesMockServer) -> None:
 @pytest.mark.asyncio
 async def test_text_request(aresponses: ResponsesMockServer) -> None:
     """Test non JSON response is handled correctly."""
-    aresponses.add(
-        HOST_PATTERN,
-        "/",
-        "GET",
-        aresponses.Response(status=200, text="OK")
-    )
+    aresponses.add(HOST_PATTERN, "/", "GET", aresponses.Response(status=200, text="OK"))
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
         response = await client.request("/")
@@ -46,12 +36,7 @@ async def test_text_request(aresponses: ResponsesMockServer) -> None:
 @pytest.mark.asyncio
 async def test_http_error500(aresponses: ResponsesMockServer):
     """Test HTTP 500 response handling."""
-    aresponses.add(
-        HOST_PATTERN,
-        "/",
-        "GET",
-        aresponses.Response(status=500, text="Internal Server Error")
-    )
+    aresponses.add(HOST_PATTERN, "/", "GET", aresponses.Response(status=500, text="Internal Server Error"))
 
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
@@ -99,9 +84,7 @@ async def test_client_error():
     # Faking a timeout by sleeping
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
-        with patch.object(
-                session, "request", side_effect=aiohttp.ClientError
-        ), pytest.raises(AgurApiConnectionError):
+        with patch.object(session, "request", side_effect=aiohttp.ClientError), pytest.raises(AgurApiConnectionError):
             assert await client.request("/")
 
 
@@ -123,14 +106,12 @@ async def test_post_login(aresponses: ResponsesMockServer):
                 "nom": "DUPOND",
                 "prenom": "TOTO",
                 "email": "dupond.toto@mycompany.com",
-                "meta": "{\"rgpd_consent\":true,\"derniere_date_connexion\":\"31/08/2023 08:45:05\"}",
-                "profils": [
-                    "UTILISATEUR_STANDARD"
-                ],
-                "isStandardOnly": True
+                "meta": '{"rgpd_consent":true,"derniere_date_connexion":"31/08/2023 08:45:05"}',
+                "profils": ["UTILISATEUR_STANDARD"],
+                "isStandardOnly": True,
             },
-            "tokenAuthentique": "f7154d97-788f-4e85-930f-a35ebb137dfe"
-        }
+            "tokenAuthentique": "f7154d97-788f-4e85-930f-a35ebb137dfe",
+        },
     )
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(host=HOST_PATTERN, session=session)
@@ -146,8 +127,8 @@ async def test_post_generate_temporary_token(aresponses: ResponsesMockServer):
         method_pattern="POST",
         response={
             "expirationDate": "2023-08-31T10:45:02.7413425+02:00",
-            "token": "314c3a24-d08d-4c86-8c12-371cc242dff6"
-        }
+            "token": "314c3a24-d08d-4c86-8c12-371cc242dff6",
+        },
     )
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
@@ -168,8 +149,8 @@ async def test_get_consumption(aresponses: ResponsesMockServer):
             "volumeConsoEnM3": 0.305,
             "valeurIndex": 448667.0,
             "typeAgregat": 1,
-            "anomalieReleve": -1
-        }
+            "anomalieReleve": -1,
+        },
     )
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
