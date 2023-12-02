@@ -19,7 +19,7 @@ tasks:
 
   poetry-install:
     cmds:
-      - poetry install
+      - poetry install --no-root
 
   setup:
     cmds:
