@@ -114,7 +114,7 @@ async def test_post_login(aresponses: ResponsesMockServer):
         },
     )
     async with aiohttp.ClientSession() as session:
-        client = AgurApiClient(host=HOST_PATTERN, session=session)
+        client = AgurApiClient(HOST_PATTERN, session=session)
         await client.login("dupond.toto@mycompany.com", "myP@ssw0rd!")
 
 
