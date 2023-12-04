@@ -3,14 +3,25 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AgurApiClient
-from .const import DOMAIN, PLATFORMS, COORDINATOR
+from .const import CONF_PROVIDER, DOMAIN, PLATFORMS, COORDINATOR, PROVIDERS
 from .coordinator import EauAgurDataUpdateCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up EAU par Agur from a config entry."""
     session = async_get_clientsession(hass)
+
+    config_provider = PROVIDERS.get(entry.data[CONF_PROVIDER], None)
+    if config_provider is None:
+        raise Exception("Provider not found")
+
     client = AgurApiClient(
+        host=config_provider["base_url"],
+        base_path=config_provider.get("base_path", None),
+        timeout=config_provider.get("default_timeout", None),
+        conversation_id=config_provider["conversation_id"],
+        client_id=config_provider["client_id"],
+        access_key=config_provider["access_key"],
         session=session,
     )
 
@@ -29,9 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
-    if unloaded := await hass.config_entries.async_unload_platforms(
-            entry, PLATFORMS
-    ):
+    if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
     return unloaded
 

@@ -8,7 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers import selector
 
 from .api import AgurApiClient, AgurApiError, AgurApiConnectionError, AgurApiUnauthorizedError
-from .const import DOMAIN, LOGGER, CONF_CONTRACT_NUMBER
+from .const import DOMAIN, LOGGER, CONF_CONTRACT_NUMBER, CONF_PROVIDER, PROVIDERS
 
 
 class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -19,10 +19,20 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None) -> config_entries.FlowResult:
         """Handle a flow initialized by the user."""
-        _errors = {}
+        _errors: dict[str, str] = {}
         if user_input is not None:
             try:
+                config_provider = PROVIDERS.get(user_input[CONF_PROVIDER], None)
+                if config_provider is None:
+                    raise AgurApiError("Provider not found")
+
                 api_client = AgurApiClient(
+                    host=config_provider["base_url"],
+                    base_path=config_provider.get("base_path", None),
+                    timeout=config_provider.get("default_timeout", None),
+                    conversation_id=config_provider["conversation_id"],
+                    client_id=config_provider["client_id"],
+                    access_key=config_provider["access_key"],
                     session=async_create_clientsession(self.hass),
                 )
 
@@ -38,12 +48,11 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 data = {
                     CONF_EMAIL: user_input[CONF_EMAIL],
                     CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    CONF_PROVIDER: user_input[CONF_PROVIDER],
                     CONF_CONTRACT_NUMBER: default_contract_id,
                 }
 
-                await self.async_set_unique_id(
-                    default_contract_id
-                )
+                await self.async_set_unique_id(default_contract_id)
 
                 self._abort_if_unique_id_configured()
 
@@ -64,18 +73,27 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({
-                vol.Required(
-                    CONF_EMAIL,
-                    default=(user_input or {}).get(CONF_EMAIL),
-                ): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        type=selector.TextSelectorType.EMAIL
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_EMAIL,
+                        default=(user_input or {}).get(CONF_EMAIL),
+                    ): selector.TextSelector(
+                        selector.TextSelectorConfig(type=selector.TextSelectorType.EMAIL),
                     ),
-                ),
-                vol.Required(CONF_PASSWORD): selector.TextSelector(
-                    selector.TextSelectorConfig(
-                        type=selector.TextSelectorType.PASSWORD
+                    vol.Required(CONF_PASSWORD): selector.TextSelector(
+                        selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD),
                     ),
-                ),
-            }))
+                    vol.Required(CONF_PROVIDER): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(value=key, label=PROVIDERS[key]["display_name"])
+                                for key in PROVIDERS
+                            ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        ),
+                    ),
+                }
+            ),
+            errors=_errors,
+        )
