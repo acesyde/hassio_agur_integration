@@ -7,7 +7,9 @@
 [![hacs][hacsbadge]][hacs]
 ![Project Maintenance][maintenance-shield]
 
-_Integration to integrate with [EAU par Agur][eau_agur]._
+_The following providers are supported :_
+- [EAU par Agur][eau_agur]
+- [EAU par Grand Paris Sud][eau_grandparissud]
 
 🌏
 [**Français**](README.md) |
