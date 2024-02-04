@@ -30,14 +30,14 @@ class AgurApiClient:
     """Main class for handling connections with the Agur API."""
 
     def __init__(
-        self,
-        host: str = BASE_URL,
-        base_path: str | None = BASE_PATH,
-        timeout: int | None = DEFAULT_TIMEOUT,
-        conversation_id: str = CONVERSATION_ID,
-        client_id: str = CLIENT_ID,
-        access_key: str = ACCESS_KEY,
-        session: aiohttp.ClientSession | None = None,
+            self,
+            host: str = BASE_URL,
+            base_path: str | None = BASE_PATH,
+            timeout: int | None = DEFAULT_TIMEOUT,
+            conversation_id: str = CONVERSATION_ID,
+            client_id: str = CLIENT_ID,
+            access_key: str = ACCESS_KEY,
+            session: aiohttp.ClientSession | None = None,
     ) -> AgurApiClient:
         """Initialize connection with the Agur API."""
 
@@ -62,13 +62,13 @@ class AgurApiClient:
             self._base_path += "/"
 
     async def request(
-        self,
-        uri: str,
-        method: str = "GET",
-        data: Any | None = None,
-        json_data: dict | None = None,
-        headers: dict[str, str] | None = None,
-        params: Mapping[str, str] | None = None,
+            self,
+            uri: str,
+            method: str = "GET",
+            data: Any | None = None,
+            json_data: dict | None = None,
+            headers: dict[str, str] | None = None,
+            params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
@@ -181,11 +181,6 @@ class AgurApiClient:
             raise AgurApiError("Error occurred while getting consumption.") from exception
 
     async def __aenter__(self) -> Any:
-        """Async enter.
-
-        Returns:
-            The AgurApiCLient object.
-        """
         return self
 
     async def close(self) -> None:
