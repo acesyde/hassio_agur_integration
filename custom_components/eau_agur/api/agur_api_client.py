@@ -22,7 +22,7 @@ from .const import (
     GET_DEFAULT_CONTRACT_PATH,
     GET_CONSUMPTION_PATH,
     BASE_PATH,
-    LOGGER,
+    LOGGER, GET_LAST_INVOICE_PATH,
 )
 
 
@@ -179,6 +179,16 @@ class AgurApiClient:
 
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting consumption.") from exception
+
+    async def get_last_invoice(self, contract_id: str) -> float:
+        """Get last invoice."""
+        try:
+            response = await self.request(f"{GET_LAST_INVOICE_PATH}{contract_id}", "GET")
+
+            return response["montantTtc"]
+
+        except AgurApiError as exception:
+            raise AgurApiError("Error occurred while getting last invoice.") from exception
 
     async def __aenter__(self) -> Any:
         return self

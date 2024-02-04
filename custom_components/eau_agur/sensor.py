@@ -5,7 +5,7 @@ from typing import Callable, Any
 
 from homeassistant.components.sensor import SensorEntityDescription, SensorDeviceClass, SensorStateClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfVolume
+from homeassistant.const import UnitOfVolume, CURRENCY_EURO
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -39,6 +39,16 @@ def read_consumption(data: dict[str, Any]):
     return None
 
 
+def read_last_invoice(data: dict[str, Any]):
+    """Read consumption from data."""
+
+    last_invoice: float | None = data["last_invoice"]
+
+    if last_invoice is not None and last_invoice > 0:
+        return last_invoice
+    return None
+
+
 SENSORS = [
     EauAgurEntityDescription(
         key="total_liters",
@@ -49,6 +59,15 @@ SENSORS = [
         device_class=SensorDeviceClass.WATER,
         state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=read_consumption,
+    ),
+    EauAgurEntityDescription(
+        key="last_invoice",
+        translation_key="last_invoice",
+        icon="mdi:cash",
+        unit_of_measurement=CURRENCY_EURO,
+        device_class=SensorDeviceClass.MONETARY,
+        state_class=SensorStateClass.TOTAL,
+        value_fn=read_last_invoice,
     )
 ]
 
