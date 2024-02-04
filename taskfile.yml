@@ -5,7 +5,7 @@ tasks:
     env:
       PYTEST: true
     cmds:
-      - poetry run pytest -rxf -x -v -l --cov=./ --cov-report=xml
+      - poetry run pytest
 
   coverage:
     deps:
@@ -17,17 +17,13 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.yml up
 
-  poetry-install:
+  install:
     cmds:
       - poetry install --no-root
 
   setup:
     cmds:
       - poetry shell
-      - task: poetry-install
-      - task: pre-commit-install
-
-  pre-commit-install:
-    cmds:
+      - task: install
       - pre-commit install --install-hooks
       - pre-commit install --hook-type commit-msg --hook-type pre-push

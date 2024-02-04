@@ -19,6 +19,9 @@
     "sensor": {
       "total_liters": {
         "name": "Total liters"
+      },
+      "last_invoice": {
+        "name": "Last invoice"
       }
     }
   }

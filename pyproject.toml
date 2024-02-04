@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "eau_agur"
-version = "0.0.4"
+version = "0.1.0"
 description = "EAU par Agur integration for Home Assistant"
 authors = ["Pierre-Emmanuel Mercier <acesyde@gmail.com>"]
 license = "MIT"
@@ -9,22 +9,23 @@ readme = "README.md"
 repository = "https://github.com/acesyde/hassio_agur_integration"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-colorlog = "^6.7.0"
-homeassistant = "^2023.1.0"
-requests = "^2.31.0"
-aiohttp = "^3.8.5"
-yarl = "^1.9.2"
+python = "~3.11"
+colorlog = "^6.7"
+homeassistant = "^2024.1"
+requests = "^2.31"
+aiohttp = "^3.8"
+yarl = "^1.9"
+async-timeout = "^4.0"
 
 [tool.poetry.group.dev.dependencies]
-asynctest = "^0.13.0"
-pytest = "^7.4.2"
-pytest-cov = "^4.1.0"
-pytest-socket = "^0.6.0"
-ruff = "^0.1.6"
-pre-commit = "^3.5.0"
-aresponses = "^2.1.6"
-vulture = "^2.9.1"
+asynctest = "^0.13"
+pytest = "^7.4"
+pytest-cov = "^4.1"
+pytest-socket = "^0.6"
+ruff = "^0.1"
+pre-commit = "^3.5"
+aresponses = "^2.1"
+vulture = "^2.9"
 
 [virtualenvs]
 create = true
@@ -32,16 +33,32 @@ in-project = true
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+indent-width = 4
+target-version = "py311"
 exclude = [
-    ".venv"
+    ".venv",
+    ".codeclimate.yml",
+    ".codecov.yml",
+    ".coveragerc",
+    ".editorconfig",
+    ".gitattributes",
+    ".gitignore",
+    ".pre-commit-config.yaml",
+    "venv"
 ]
 
 [tool.pytest.ini_options]
 addopts = "-rxf -x -v -l --cov=./ --cov-report=xml"
+pythonpath = ["custom_components/eau_agur"]
 testpaths = [
     "tests"
 ]
+
+[tool.ruff.lint]
+select = ["F", "D"]
+ignore = ["D100", "D104", "D105", "D202"]
+fixable = ["ALL"]
+unfixable = []
 
 [tool.vulture]
 min_confidence = 80

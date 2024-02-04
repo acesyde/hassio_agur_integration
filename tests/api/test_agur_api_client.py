@@ -156,3 +156,22 @@ async def test_get_consumption(aresponses: ResponsesMockServer):
         client = AgurApiClient(HOST_PATTERN, session=session)
         value = await client.get_consumption("12345")
         assert value == 448667.0
+
+@pytest.mark.asyncio
+async def test_get_last_invoice(aresponses: ResponsesMockServer):
+    """Test requesting consumption data."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/TableauDeBord/dernierReglement/12345",
+        method_pattern="GET",
+        response={
+            "montantTtc": 30.0,
+            "natureCompte": "Mensualisation",
+            "libelleTypeEcriture": "REGLEMENT",
+            "libelleModeReglement": "PRELEVEMENT BANCAIRE"
+        },
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        value = await client.get_last_invoice("12345")
+        assert value == 30.0

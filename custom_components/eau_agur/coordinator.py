@@ -41,7 +41,10 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             await self._api_client.login(self._email, self._password)
 
             # Get the consumption data
-            result = {"consumption": await self._api_client.get_consumption(self._contract_number)}
+            result = {
+                "consumption": await self.async_get_consumption(),
+                "last_invoice": await self.async_get_last_invoice(),
+            }
 
             return result
 
@@ -49,5 +52,19 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             # Raising ConfigEntryAuthFailed will cancel future updates
             # and start a config flow with SOURCE_REAUTH (async_step_reauth)
             raise ConfigEntryAuthFailed from err
+
+    async def async_get_consumption(self) -> float | None:
+        """Return the consumption data."""
+        try:
+            return await self._api_client.get_consumption(self._contract_number)
         except AgurApiConnectionError as err:
-            raise UpdateFailed(f"Error communicating with API: {err}")
+            LOGGER.error(f"Error communicating with API: {err}")
+            return None
+
+    async def async_get_last_invoice(self) -> dict[str, Any] | None:
+        """Return the last invoice data."""
+        try:
+            return await self._api_client.get_last_invoice(self._contract_number)
+        except AgurApiConnectionError as err:
+            LOGGER.error(f"Error communicating with API: {err}")
+            return None

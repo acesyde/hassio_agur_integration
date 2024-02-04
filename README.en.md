@@ -8,6 +8,7 @@
 ![Project Maintenance][maintenance-shield]
 
 _The following providers are supported :_
+
 - [EAU par Agur][eau_agur]
 - [EAU par Grand Paris Sud][eau_grandparissud]
 
@@ -20,6 +21,7 @@ English
 | Platform              | Description      | Unit | Implemented        |
 |-----------------------|------------------|------|--------------------|
 | `sensor.total_liters` | Number of liters | L    | :white_check_mark: |
+| `sensor.last_invoice` | Last invoice     | €    | :white_check_mark: |
 
 > [!NOTE]
 > Data is updated every 24h.
