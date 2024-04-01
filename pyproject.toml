@@ -11,7 +11,7 @@ repository = "https://github.com/acesyde/hassio_agur_integration"
 [tool.poetry.dependencies]
 python = "~3.11"
 colorlog = "^6.7"
-homeassistant = "^2024.1"
+homeassistant = "^2024.3"
 requests = "^2.31"
 aiohttp = "^3.8"
 yarl = "^1.9"
