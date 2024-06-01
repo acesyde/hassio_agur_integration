@@ -2053,17 +2053,17 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 
 [[package]]
 name = "pytest-socket"
-version = "0.6.0"
+version = "0.7.0"
 description = "Pytest Plugin to disable socket calls during tests"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pytest_socket-0.6.0-py3-none-any.whl", hash = "sha256:cca72f134ff01e0023c402e78d31b32e68da3efdf3493bf7788f8eba86a6824c"},
-    {file = "pytest_socket-0.6.0.tar.gz", hash = "sha256:363c1d67228315d4fc7912f1aabfd570de29d0e3db6217d61db5728adacd7138"},
+    {file = "pytest_socket-0.7.0-py3-none-any.whl", hash = "sha256:7e0f4642177d55d317bbd58fc68c6bd9048d6eadb2d46a89307fa9221336ce45"},
+    {file = "pytest_socket-0.7.0.tar.gz", hash = "sha256:71ab048cbbcb085c15a4423b73b619a8b35d6a307f46f78ea46be51b1b7e11b3"},
 ]
 
 [package.dependencies]
-pytest = ">=3.6.3"
+pytest = ">=6.2.5"
 
 [[package]]
 name = "python-dateutil"
@@ -2620,4 +2620,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.11"
-content-hash = "39fdb8cb2dcb0dace33b155762468b7bd9463be5a765c19ab17ab94db757fe53"
+content-hash = "215793dcfbd02bb78a4e545e246ad79dc03561ba5c1ebb9945a334c578c2e03e"
