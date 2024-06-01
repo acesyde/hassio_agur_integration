@@ -19,7 +19,7 @@ async-timeout = "^4.0"
 
 [tool.poetry.group.dev.dependencies]
 asynctest = "^0.13"
-pytest = "^7.4"
+pytest = "^8.2"
 pytest-cov = "^4.1"
 pytest-socket = "^0.6"
 ruff = "^0.4"
