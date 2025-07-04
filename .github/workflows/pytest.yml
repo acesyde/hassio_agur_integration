@@ -33,9 +33,13 @@ jobs:
       - name: 🏃 Run tests
         run: mise project:tests
 
+      - name: 📊 Generate coverage
+        run: mise project:coverage
+
       - name: 📤 Upload coverage to Codecov
-        run: |
-          mise project:coverage
-          curl -sfSL https://codecov.io/bash | bash -
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          name: pytest
+          fail_ci_if_error: true
+          file: coverage.xml
