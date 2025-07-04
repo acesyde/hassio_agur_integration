@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 import aiohttp
@@ -176,3 +177,44 @@ async def test_get_last_invoice(aresponses: ResponsesMockServer):
         client = AgurApiClient(HOST_PATTERN, session=session)
         value = await client.get_last_invoice("12345")
         assert value == 30.0
+
+
+@pytest.mark.asyncio
+async def test_is_token_expired_none():
+    """Test is_token_expired when token_expires_at is None."""
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        # By default, _token_expires_at is None
+        assert client.is_token_expired() is True
+
+
+@pytest.mark.asyncio
+async def test_is_token_expired_past():
+    """Test is_token_expired when token is expired."""
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        # Set token expiration to a past datetime
+        past_time = datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+        client._token_expires_at = past_time
+
+        # Mock current time to be after expiration
+        current_time = datetime(2023, 1, 1, 13, 0, 0, tzinfo=timezone.utc)
+        with patch("custom_components.eau_agur.api.agur_api_client.datetime") as mock_datetime:
+            mock_datetime.now.return_value = current_time
+            assert client.is_token_expired() is True
+
+
+@pytest.mark.asyncio
+async def test_is_token_expired_future():
+    """Test is_token_expired when token is not expired."""
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        # Set token expiration to a future datetime
+        future_time = datetime(2023, 1, 1, 14, 0, 0, tzinfo=timezone.utc)
+        client._token_expires_at = future_time
+
+        # Mock current time to be before expiration
+        current_time = datetime(2023, 1, 1, 13, 0, 0, tzinfo=timezone.utc)
+        with patch("custom_components.eau_agur.api.agur_api_client.datetime") as mock_datetime:
+            mock_datetime.now.return_value = current_time
+            assert client.is_token_expired() is False
