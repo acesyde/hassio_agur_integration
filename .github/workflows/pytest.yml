@@ -37,3 +37,5 @@ jobs:
         run: |
           mise project:coverage
           curl -sfSL https://codecov.io/bash | bash -
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
