@@ -62,13 +62,14 @@ select = [
   "PL",    # pylint
 ]
 ignore = [
-  "G004",   # logging-fstring-interpolation
-  "E501",   # line-too-long
-  "RET505", # no-else-return
-  "RET507", # no-else-continue
-  "UP032",  # f-string
-  "BLE001", # broad-exception-caught
+  "G004",    # logging-fstring-interpolation
+  "E501",    # line-too-long
+  "RET505",  # no-else-return
+  "RET507",  # no-else-continue
+  "UP032",   # f-string
+  "BLE001",  # broad-exception-caught
   "PLR2004", # magic-value-comparison
+  "S101",    # assert
 ]
 
 fixable = ["ALL"]
