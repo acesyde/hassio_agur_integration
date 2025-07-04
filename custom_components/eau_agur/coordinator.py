@@ -5,10 +5,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
-from .const import SCAN_INTERVAL_IN_MINUTES, DOMAIN, LOGGER, CONF_CONTRACT_NUMBER
+from .const import CONF_CONTRACT_NUMBER, DOMAIN, LOGGER, SCAN_INTERVAL_IN_MINUTES
 
 
 class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):

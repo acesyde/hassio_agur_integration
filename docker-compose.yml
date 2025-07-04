@@ -1,13 +1,11 @@
-version: '3'
-
 services:
   hassio:
-    image: ghcr.io/home-assistant/home-assistant:stable
     container_name: hassio_agur_integration
+    image: ghcr.io/home-assistant/home-assistant:stable
     environment:
-        - TZ=Europe/Paris
+      - TZ=Europe/Paris
     ports:
-        - 8123:8123
+      - 8123:8123
     volumes:
       - ./hassio_dev:/config
       - ./custom_components:/config/custom_components:ro

@@ -6,7 +6,7 @@ import pytest
 from aresponses import ResponsesMockServer
 
 from custom_components.eau_agur.api import AgurApiClient
-from custom_components.eau_agur.api.exceptions import AgurApiError, AgurApiConnectionError
+from custom_components.eau_agur.api.exceptions import AgurApiConnectionError, AgurApiError
 
 HOST_PATTERN = "example.com"
 
@@ -157,6 +157,7 @@ async def test_get_consumption(aresponses: ResponsesMockServer):
         value = await client.get_consumption("12345")
         assert value == 448667.0
 
+
 @pytest.mark.asyncio
 async def test_get_last_invoice(aresponses: ResponsesMockServer):
     """Test requesting consumption data."""
@@ -168,7 +169,7 @@ async def test_get_last_invoice(aresponses: ResponsesMockServer):
             "montantTtc": 30.0,
             "natureCompte": "Mensualisation",
             "libelleTypeEcriture": "REGLEMENT",
-            "libelleModeReglement": "PRELEVEMENT BANCAIRE"
+            "libelleModeReglement": "PRELEVEMENT BANCAIRE",
         },
     )
     async with aiohttp.ClientSession() as session:

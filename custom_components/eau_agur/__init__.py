@@ -3,7 +3,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AgurApiClient
-from .const import CONF_PROVIDER, DOMAIN, PLATFORMS, COORDINATOR, PROVIDERS
+from .const import CONF_PROVIDER, COORDINATOR, DOMAIN, PLATFORMS, PROVIDERS
 from .coordinator import EauAgurDataUpdateCoordinator
 
 

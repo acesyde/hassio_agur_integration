@@ -10,9 +10,7 @@ class EauAgurEntity(CoordinatorEntity):
 
     _attr_attribution = ATTRIBUTION
 
-    def __init__(
-            self, coordinator: EauAgurDataUpdateCoordinator
-    ) -> None:
+    def __init__(self, coordinator: EauAgurDataUpdateCoordinator) -> None:
         """Initialize."""
         super().__init__(coordinator)
         self._attr_unique_id = coordinator.config_entry.entry_id

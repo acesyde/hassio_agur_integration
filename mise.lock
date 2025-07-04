@@ -1,0 +1,15 @@
+[tools.gitversion]
+version = "6.3.0"
+backend = "aqua:gittools/gitversion"
+
+[tools.pre-commit]
+version = "4.2.0"
+backend = "aqua:pre-commit/pre-commit"
+
+[tools.python]
+version = "3.13.5"
+backend = "core:python"
+
+[tools.uv]
+version = "0.7.18"
+backend = "aqua:astral-sh/uv"
