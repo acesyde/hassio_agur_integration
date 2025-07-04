@@ -1,7 +1,3 @@
-[tools.gitversion]
-version = "6.3.0"
-backend = "aqua:gittools/gitversion"
-
 [tools.pre-commit]
 version = "4.2.0"
 backend = "aqua:pre-commit/pre-commit"

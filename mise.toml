@@ -1,5 +1,4 @@
 [tools]
-gitversion = "6.3.0"
 pre-commit = "4.2"
 python = "3.13"
 uv = "0.7.18"
