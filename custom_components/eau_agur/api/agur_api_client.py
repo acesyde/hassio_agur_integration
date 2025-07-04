@@ -78,7 +78,7 @@ class AgurApiClient:
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
 
-        LOGGER.debug("URL: %s", url)
+        LOGGER.warning("URL: %s", url)
 
         if headers is None:
             headers: dict[str, Any] = {}
@@ -87,7 +87,7 @@ class AgurApiClient:
         headers["Conversationid"] = self._conversation_id
 
         if self._token is not None:
-            LOGGER.debug("Token: %s", self._token[:18])  # Only take the first 18 characters
+            LOGGER.warning("Token: %s", self._token[:18])  # Only take the first 18 characters
             headers["Token"] = self._token
 
         if self._session is None:
@@ -120,16 +120,16 @@ class AgurApiClient:
 
         if "application/json" in content_type:
             json_data = await response.json()
-            LOGGER.debug("Response JSON: %s", json_data)
+            LOGGER.warning("Response JSON: %s", json_data)
             return json_data
 
         text = await response.text()
-        LOGGER.debug("Response Text: %s", text)
+        LOGGER.warning("Response Text: %s", text)
         return {"message": text}
 
     def is_token_expired(self) -> bool:
         """Check if the token is expired."""
-        LOGGER.debug("Token expires at: %s", self._token_expires_at)
+        LOGGER.warning("Token expires at: %s", self._token_expires_at)
         if self._token_expires_at is None:
             return True
         return datetime.now(timezone.utc) > self._token_expires_at
