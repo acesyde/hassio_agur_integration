@@ -1,6 +1,7 @@
 services:
   hassio:
     container_name: hassio_agur_integration
+    platform: linux/amd64
     image: ghcr.io/home-assistant/home-assistant:stable
     environment:
       - TZ=Europe/Paris

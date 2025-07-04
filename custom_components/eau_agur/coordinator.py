@@ -37,7 +37,11 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             LOGGER.debug("Updating data from API")
 
             # Refresh the token and login if needed
-            await self._api_client.generate_temporary_token()
+            if self._api_client.is_token_expired():
+                await self._api_client.generate_temporary_token()
+            else:
+                LOGGER.debug("Token is not expired, skipping token generation")
+
             await self._api_client.login(self._email, self._password)
 
             # Get the consumption data

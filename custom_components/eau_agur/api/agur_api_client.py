@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import socket
+from datetime import datetime, timezone
 from typing import Any, Mapping
 
 import aiohttp
@@ -50,6 +51,7 @@ class AgurApiClient:
             timeout = DEFAULT_TIMEOUT
 
         self._token = None
+        self._token_expires_at = None
         self._session = session
         self._close_session = False
 
@@ -85,6 +87,7 @@ class AgurApiClient:
         headers["Conversationid"] = self._conversation_id
 
         if self._token is not None:
+            LOGGER.debug("Token: %s", self._token[:18])  # Only take the first 18 characters
             headers["Token"] = self._token
 
         if self._session is None:
@@ -116,10 +119,20 @@ class AgurApiClient:
             raise AgurApiError(response.status, {"message": contents.decode("utf8")})
 
         if "application/json" in content_type:
-            return await response.json()
+            json_data = await response.json()
+            LOGGER.debug("Response JSON: %s", json_data)
+            return json_data
 
         text = await response.text()
+        LOGGER.debug("Response Text: %s", text)
         return {"message": text}
+
+    def is_token_expired(self) -> bool:
+        """Check if the token is expired."""
+        LOGGER.debug("Token expires at: %s", self._token_expires_at)
+        if self._token_expires_at is None:
+            return True
+        return datetime.now(timezone.utc) > self._token_expires_at
 
     async def generate_temporary_token(self) -> None:
         """Generate a temporary token."""
@@ -138,7 +151,7 @@ class AgurApiClient:
             )
 
             self._token = response["token"]
-
+            self._token_expires_at = datetime.fromisoformat(response["expirationDate"]).astimezone(timezone.utc)
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while generating temporary token.") from exception
 
