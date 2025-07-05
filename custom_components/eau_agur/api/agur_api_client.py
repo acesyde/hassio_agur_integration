@@ -7,6 +7,7 @@ import json
 import logging
 import socket
 import uuid
+from http.cookies import SimpleCookie
 from typing import Any, Mapping
 
 import aiohttp
@@ -57,7 +58,7 @@ class AgurApiClient:
         self._token = None
         self._session = session
         self._close_session = False
-        self._cookies: dict[str, str] = {}
+        self._cookies: SimpleCookie | None = None
 
         self._host = host
         self._base_path = base_path
@@ -80,14 +81,12 @@ class AgurApiClient:
         """Make a request to the Agur API."""
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
-
-        LOGGER.debug("URL: %s", url)
-        LOGGER.debug("Headers: %s", headers)
-        LOGGER.debug("Cookies: %s", self._cookies)
+        LOGGER.debug("Request URL: %s", url)
 
         if headers is None:
             headers = {}
 
+        headers["User-Agent"] = "homeassistant"
         headers["Content-Type"] = "application/json"
 
         if self._conversation_id is not None:
@@ -97,15 +96,14 @@ class AgurApiClient:
             headers["Token"] = self._token
 
         if self._session is None:
-            self._session = aiohttp.ClientSession()
-        self._close_session = True
+            self._session = aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False))
+            self._close_session = True
 
         try:
             async with async_timeout.timeout(self._timeout):
                 response = await self._session.request(
                     method,
                     url,
-                    cookies=self._cookies,
                     data=data,
                     json=json_data,
                     params=params,
@@ -135,7 +133,7 @@ class AgurApiClient:
         """Generate a temporary token."""
         try:
             # Generate a conversation id
-            self._conversation_id = f"S-WEB-Netscape-{uuid.uuid4()}"
+            self._conversation_id = f"JS-WEB-Netscape-{uuid.uuid4()}"
 
             response = await self.request(
                 uri=GENERATE_TOKEN_PATH,
@@ -213,6 +211,7 @@ class AgurApiClient:
 
     async def close(self) -> None:
         """Close open client session."""
+        LOGGER.debug("Closing session")
         if self._session and self._close_session:
             await self._session.close()
 

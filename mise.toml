@@ -47,7 +47,7 @@ run = "uv run pre-commit run --all-files"
 
 [tasks."hassio:start"]
 description = "Start Hassio"
-run = "docker compose -f docker-compose.yml up"
+run = "docker compose -f docker-compose.yml up --remove-orphans"
 
 [tasks."hassio:stop"]
 description = "Stop Hassio"

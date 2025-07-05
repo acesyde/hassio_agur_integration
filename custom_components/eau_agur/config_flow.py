@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
@@ -38,7 +39,9 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     timeout=config_provider.get("default_timeout", None),
                     client_id=config_provider["client_id"],
                     access_key=config_provider["access_key"],
-                    session=async_create_clientsession(self.hass),
+                    session=async_create_clientsession(
+                        self.hass, cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False)
+                    ),
                 )
 
                 await api_client.generate_temporary_token()
