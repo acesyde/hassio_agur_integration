@@ -50,7 +50,7 @@ class AgurApiClient:
             timeout = DEFAULT_TIMEOUT
 
         self._token = None
-        self._cookie = None
+        self._cookies = None
         self._session = session
         self._close_session = False
 
@@ -72,12 +72,14 @@ class AgurApiClient:
         json_data: dict | None = None,
         headers: dict[str, str] | None = None,
         params: Mapping[str, str] | None = None,
+        save_cookies: bool = False,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
 
         LOGGER.debug("URL: %s", url)
+        LOGGER.debug("Cookies: %s", self._cookies)
 
         if headers is None:
             headers: dict[str, Any] = {}
@@ -88,12 +90,12 @@ class AgurApiClient:
         if self._token is not None:
             headers["Token"] = self._token
 
-        if self._cookie is not None:
-            headers["Cookie"] = self._cookie
-
         if self._session is None:
             self._session = aiohttp.ClientSession()
         self._close_session = True
+
+        if self._cookies is not None:
+            headers["Cookie"] = self._cookies
 
         try:
             async with async_timeout.timeout(self._timeout):
@@ -106,8 +108,9 @@ class AgurApiClient:
                     headers=headers,
                 )
 
-            # Currently Grand sud uses a cookie to stick the session.
-            self._cookie = response.headers.get("Set-Cookie", "")
+            # Store the cookies for future requests (Grand Paris Sud)
+            if save_cookies:
+                self._cookies = response.headers.get("Set-Cookie", None)
 
         except asyncio.TimeoutError as exception:
             raise AgurApiConnectionError("Timeout occurred while connecting to Agur API.") from exception
@@ -142,6 +145,7 @@ class AgurApiClient:
                     "ClientId": self._client_id,
                     "ConversationId": self._conversation_id,
                 },
+                save_cookies=True,
             )
 
             self._token = response["token"]
