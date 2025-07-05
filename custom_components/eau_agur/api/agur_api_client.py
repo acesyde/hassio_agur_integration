@@ -7,7 +7,6 @@ import json
 import logging
 import socket
 import uuid
-from http.cookies import SimpleCookie
 from typing import Any, Mapping
 
 import aiohttp
@@ -58,7 +57,6 @@ class AgurApiClient:
         self._token = None
         self._session = session
         self._close_session = False
-        self._cookies: SimpleCookie | None = None
 
         self._host = host
         self._base_path = base_path
