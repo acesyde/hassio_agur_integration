@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .api import AgurApiClient, AgurApiConnectionError, AgurApiInvalidSessionError, AgurApiUnauthorizedError
+from .api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
 from .const import CONF_CONTRACT_NUMBER, DOMAIN, LOGGER, SCAN_INTERVAL_IN_MINUTES
 
 
@@ -45,20 +45,7 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             if not self._email or not self._password or not self._contract_number:
                 raise ConfigEntryAuthFailed("Missing required configuration: email, password, or contract number")
 
-            # Retry login up to 4 times if we get an invalid session error
-            login_attempts = 0
-            max_login_attempts = 4
-
-            while login_attempts < max_login_attempts:
-                try:
-                    await self._api_client.login(self._email, self._password)
-                    break  # Login successful, exit retry loop
-                except AgurApiInvalidSessionError as err:
-                    login_attempts += 1
-                    if login_attempts >= max_login_attempts:
-                        LOGGER.error(f"Login failed after {max_login_attempts} attempts due to invalid session")
-                        raise ConfigEntryAuthFailed("Login failed after maximum retry attempts") from err
-                    LOGGER.warning(f"Login attempt {login_attempts} failed due to invalid session, retrying...")
+            await self._api_client.login(self._email, self._password)
 
             # Get the consumption data
             result = {

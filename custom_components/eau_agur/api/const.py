@@ -6,7 +6,6 @@ LOGGER: Logger = getLogger(__package__)
 BASE_URL: str = "ael.agur.fr"
 BASE_PATH: str = "/webapi"
 DEFAULT_TIMEOUT: int = 10
-CONVERSATION_ID: str = "JS-WEB-Netscape-8ca82bba-ef0a-4e83-b89c-5fa28609136b"
 CLIENT_ID: str = "AEL-TOKEN-AGR-PRD"
 ACCESS_KEY: str = "XX_fr-5DjklsdMM-AGR-PRD"
 

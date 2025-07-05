@@ -12,7 +12,6 @@ from .api import (
     AgurApiClient,
     AgurApiConnectionError,
     AgurApiError,
-    AgurApiInvalidSessionError,
     AgurApiUnauthorizedError,
 )
 from .const import CONF_CONTRACT_NUMBER, CONF_PROVIDER, DOMAIN, LOGGER, PROVIDERS
@@ -37,7 +36,6 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     host=config_provider["base_url"],
                     base_path=config_provider.get("base_path", None),
                     timeout=config_provider.get("default_timeout", None),
-                    conversation_id=config_provider["conversation_id"],
                     client_id=config_provider["client_id"],
                     access_key=config_provider["access_key"],
                     session=async_create_clientsession(self.hass),
@@ -45,23 +43,10 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
                 await api_client.generate_temporary_token()
 
-                # Retry login up to 4 times if we get an invalid session error
-                login_attempts = 0
-                max_login_attempts = 4
-
-                while login_attempts < max_login_attempts:
-                    try:
-                        await api_client.login(
-                            user_input[CONF_EMAIL],
-                            user_input[CONF_PASSWORD],
-                        )
-                        break  # Login successful, exit retry loop
-                    except AgurApiInvalidSessionError as err:
-                        login_attempts += 1
-                        if login_attempts >= max_login_attempts:
-                            LOGGER.error(f"Login failed after {max_login_attempts} attempts due to invalid session")
-                            raise AgurApiError("Login failed after maximum retry attempts") from err
-                        LOGGER.warning(f"Login attempt {login_attempts} failed due to invalid session, retrying...")
+                await api_client.login(
+                    user_input[CONF_EMAIL],
+                    user_input[CONF_PASSWORD],
+                )
 
                 default_contract_id = await api_client.get_default_contract()
 

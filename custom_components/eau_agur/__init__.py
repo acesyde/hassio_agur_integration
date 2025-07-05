@@ -19,7 +19,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         host=config_provider["base_url"],
         base_path=config_provider.get("base_path", None),
         timeout=config_provider.get("default_timeout", None),
-        conversation_id=config_provider["conversation_id"],
         client_id=config_provider["client_id"],
         access_key=config_provider["access_key"],
         session=session,
