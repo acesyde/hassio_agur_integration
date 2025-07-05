@@ -1,4 +1,5 @@
 """Constants for mylight_systems."""
+
 from logging import Logger, getLogger
 
 from homeassistant.const import Platform
@@ -25,14 +26,12 @@ PROVIDERS = {
         "display_name": "Eau par Agur",
         "base_url": "ael.agur.fr",
         "default_timeout": 10,
-        "conversation_id": "JS-WEB-Netscape-8ca82bba-ef0a-4e83-b89c-5fa28609136b",
         "client_id": "AEL-TOKEN-AGR-PRD",
         "access_key": "XX_fr-5DjklsdMM-AGR-PRD",
     },
     "grandparissud": {
         "display_name": "Grand Paris Sud",
         "base_url": "abonne-eau.grandparissud.fr",
-        "conversation_id": "JS-WEB-Netscape-5d0fd8bd-ab70-4764-99a4-55545f0b4941",
         "client_id": "AEL-TOKEN-GPS-PRD",
         "access_key": "REGPS-hc-GPS-MP-PRD",
     },

@@ -1,44 +1,51 @@
 """Asynchronous Python client for the EAU par Agur API."""
+
 from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import socket
+import uuid
 from typing import Any, Mapping
 
 import aiohttp
 import async_timeout
 from yarl import URL
 
-from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
 from .const import (
-    BASE_URL,
-    DEFAULT_TIMEOUT,
     ACCESS_KEY,
-    CLIENT_ID,
-    CONVERSATION_ID,
-    LOGIN_PATH,
-    GENERATE_TOKEN_PATH,
-    GET_DEFAULT_CONTRACT_PATH,
-    GET_CONSUMPTION_PATH,
     BASE_PATH,
-    LOGGER, GET_LAST_INVOICE_PATH,
+    BASE_URL,
+    CLIENT_ID,
+    DEFAULT_TIMEOUT,
+    GENERATE_TOKEN_PATH,
+    GET_CONSUMPTION_PATH,
+    GET_DEFAULT_CONTRACT_PATH,
+    GET_LAST_INVOICE_PATH,
+    LOGGER,
+    LOGIN_PATH,
 )
+from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiInvalidSessionError, AgurApiUnauthorizedError
+
+aiohttp_client_logger = logging.getLogger("aiohttp.client")
+aiohttp_client_logger.setLevel(logging.DEBUG)
 
 
 class AgurApiClient:
     """Main class for handling connections with the Agur API."""
 
+    _conversation_id: str | None = None
+
     def __init__(
-            self,
-            host: str = BASE_URL,
-            base_path: str | None = BASE_PATH,
-            timeout: int | None = DEFAULT_TIMEOUT,
-            conversation_id: str = CONVERSATION_ID,
-            client_id: str = CLIENT_ID,
-            access_key: str = ACCESS_KEY,
-            session: aiohttp.ClientSession | None = None,
-    ) -> AgurApiClient:
+        self,
+        host: str = BASE_URL,
+        base_path: str | None = BASE_PATH,
+        timeout: int | None = DEFAULT_TIMEOUT,
+        client_id: str = CLIENT_ID,
+        access_key: str = ACCESS_KEY,
+        session: aiohttp.ClientSession | None = None,
+    ) -> None:
         """Initialize connection with the Agur API."""
 
         if base_path is None:
@@ -54,7 +61,6 @@ class AgurApiClient:
         self._host = host
         self._base_path = base_path
         self._timeout = timeout
-        self._conversation_id = conversation_id
         self._client_id = client_id
         self._access_key = access_key
 
@@ -62,32 +68,34 @@ class AgurApiClient:
             self._base_path += "/"
 
     async def request(
-            self,
-            uri: str,
-            method: str = "GET",
-            data: Any | None = None,
-            json_data: dict | None = None,
-            headers: dict[str, str] | None = None,
-            params: Mapping[str, str] | None = None,
+        self,
+        uri: str,
+        method: str = "GET",
+        data: Any | None = None,
+        json_data: dict | None = None,
+        headers: dict[str, str] | None = None,
+        params: Mapping[str, str] | None = None,
     ) -> dict[str, Any]:
         """Make a request to the Agur API."""
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
-
-        LOGGER.debug("URL: %s", url)
+        LOGGER.debug("Request URL: %s", url)
 
         if headers is None:
-            headers: dict[str, Any] = {}
+            headers = {}
 
+        headers["User-Agent"] = "homeassistant"
         headers["Content-Type"] = "application/json"
-        headers["Conversationid"] = self._conversation_id
+
+        if self._conversation_id is not None:
+            headers["ConversationId"] = self._conversation_id
 
         if self._token is not None:
             headers["Token"] = self._token
 
         if self._session is None:
-            self._session = aiohttp.ClientSession()
-        self._close_session = True
+            self._session = aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False))
+            self._close_session = True
 
         try:
             async with async_timeout.timeout(self._timeout):
@@ -99,6 +107,7 @@ class AgurApiClient:
                     params=params,
                     headers=headers,
                 )
+
         except asyncio.TimeoutError as exception:
             raise AgurApiConnectionError("Timeout occurred while connecting to Agur API.") from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
@@ -116,17 +125,19 @@ class AgurApiClient:
         if "application/json" in content_type:
             return await response.json()
 
-        text = await response.text()
-        return {"message": text}
+        return {"message": await response.text()}
 
     async def generate_temporary_token(self) -> None:
         """Generate a temporary token."""
         try:
+            # Generate a conversation id
+            self._conversation_id = f"JS-WEB-Netscape-{uuid.uuid4()}"
+
             response = await self.request(
                 uri=GENERATE_TOKEN_PATH,
                 method="POST",
                 headers={
-                    "token": self._access_key,
+                    "Token": self._access_key,
                 },
                 json_data={
                     "AccessKey": self._access_key,
@@ -140,7 +151,7 @@ class AgurApiClient:
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while generating temporary token.") from exception
 
-    async def login(self, email: str, password: str) -> bool:
+    async def login(self, email: str, password: str) -> None:
         """Login to Agur API."""
         try:
             response = await self.request(
@@ -157,6 +168,9 @@ class AgurApiClient:
         except AgurApiError as exception:
             if exception.args[0] == 401:
                 raise AgurApiUnauthorizedError("Invalid credentials.") from exception
+
+            if exception.args[0] == 400:
+                raise AgurApiInvalidSessionError("Invalid session.") from exception
 
             raise AgurApiError("Error occurred while logging in.") from exception
 
@@ -195,6 +209,7 @@ class AgurApiClient:
 
     async def close(self) -> None:
         """Close open client session."""
+        LOGGER.debug("Closing session")
         if self._session and self._close_session:
             await self._session.close()
 

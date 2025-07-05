@@ -1,14 +1,21 @@
 """Adds config flow for EAU par Agur."""
+
 from __future__ import annotations
 
+import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers import selector
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .api import AgurApiClient, AgurApiError, AgurApiConnectionError, AgurApiUnauthorizedError
-from .const import DOMAIN, LOGGER, CONF_CONTRACT_NUMBER, CONF_PROVIDER, PROVIDERS
+from .api import (
+    AgurApiClient,
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiUnauthorizedError,
+)
+from .const import CONF_CONTRACT_NUMBER, CONF_PROVIDER, DOMAIN, LOGGER, PROVIDERS
 
 
 class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -17,7 +24,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    async def async_step_user(self, user_input=None) -> config_entries.FlowResult:
+    async def async_step_user(self, user_input=None) -> config_entries.ConfigFlowResult:
         """Handle a flow initialized by the user."""
         _errors: dict[str, str] = {}
         if user_input is not None:
@@ -30,10 +37,11 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     host=config_provider["base_url"],
                     base_path=config_provider.get("base_path", None),
                     timeout=config_provider.get("default_timeout", None),
-                    conversation_id=config_provider["conversation_id"],
                     client_id=config_provider["client_id"],
                     access_key=config_provider["access_key"],
-                    session=async_create_clientsession(self.hass),
+                    session=async_create_clientsession(
+                        self.hass, cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False)
+                    ),
                 )
 
                 await api_client.generate_temporary_token()

@@ -1,15 +1,17 @@
+import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AgurApiClient
-from .const import CONF_PROVIDER, DOMAIN, PLATFORMS, COORDINATOR, PROVIDERS
+from .const import CONF_PROVIDER, COORDINATOR, DOMAIN, PLATFORMS, PROVIDERS
 from .coordinator import EauAgurDataUpdateCoordinator
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up EAU par Agur from a config entry."""
-    session = async_get_clientsession(hass)
+    session = async_get_clientsession(hass=hass)
+    session._cookie_jar = aiohttp.CookieJar(unsafe=False, quote_cookie=False)
 
     config_provider = PROVIDERS.get(entry.data[CONF_PROVIDER], None)
     if config_provider is None:
@@ -19,7 +21,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         host=config_provider["base_url"],
         base_path=config_provider.get("base_path", None),
         timeout=config_provider.get("default_timeout", None),
-        conversation_id=config_provider["conversation_id"],
         client_id=config_provider["client_id"],
         access_key=config_provider["access_key"],
         session=session,

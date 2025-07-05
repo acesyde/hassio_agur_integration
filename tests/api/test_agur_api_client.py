@@ -1,4 +1,5 @@
 import asyncio
+import json
 from unittest.mock import patch
 
 import aiohttp
@@ -6,7 +7,12 @@ import pytest
 from aresponses import ResponsesMockServer
 
 from custom_components.eau_agur.api import AgurApiClient
-from custom_components.eau_agur.api.exceptions import AgurApiError, AgurApiConnectionError
+from custom_components.eau_agur.api.exceptions import (
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiInvalidSessionError,
+    AgurApiUnauthorizedError,
+)
 
 HOST_PATTERN = "example.com"
 
@@ -51,7 +57,7 @@ async def test_http_error400(aresponses):
         HOST_PATTERN,
         "/",
         "GET",
-        aresponses.Response(text="Bad request!", status=404),
+        aresponses.Response(text="Bad request!", status=400),
     )
 
     async with aiohttp.ClientSession() as session:
@@ -119,6 +125,56 @@ async def test_post_login(aresponses: ResponsesMockServer):
 
 
 @pytest.mark.asyncio
+async def test_post_login_invalid_session(aresponses: ResponsesMockServer):
+    """Test requesting consumption data."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/Utilisateur/authentification",
+        method_pattern="POST",
+        response=aresponses.Response(
+            status=400,
+            body=json.dumps(
+                {
+                    "severity": "Security",
+                    "message": "Session Inconnue. Veuillez rafraîchir votre page et vous reconnecter.",
+                    "according": "W/FRONT",
+                    "refLog": "LogTicket-250705-0745-c8692f2c-485a-48c3-9daa-ded89ad5d246",
+                }
+            ),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiInvalidSessionError):
+            await client.login("dupond.toto@mycompany.com", "myP@ssw0rd!")
+
+
+@pytest.mark.asyncio
+async def test_post_login_invalid_credentials(aresponses: ResponsesMockServer):
+    """Test requesting consumption data."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/Utilisateur/authentification",
+        method_pattern="POST",
+        response=aresponses.Response(
+            status=401,
+            body=json.dumps(
+                {
+                    "severity": "Security",
+                    "message": "Par sécurité au bout de 5 essais infructueux votre compte sera bloqué. Il vous reste 5 essais.",
+                    "according": "W/FRONT",
+                    "refLog": "LogTicket-250705-0923-98d60ea9-2882-42fe-ab06-43475363c192",
+                }
+            ),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiUnauthorizedError):
+            await client.login("dupond.toto@mycompany.com", "myP@ssw0rd!")
+
+
+@pytest.mark.asyncio
 async def test_post_generate_temporary_token(aresponses: ResponsesMockServer):
     """Test requesting generation of a temporary token."""
     aresponses.add(
@@ -157,6 +213,7 @@ async def test_get_consumption(aresponses: ResponsesMockServer):
         value = await client.get_consumption("12345")
         assert value == 448667.0
 
+
 @pytest.mark.asyncio
 async def test_get_last_invoice(aresponses: ResponsesMockServer):
     """Test requesting consumption data."""
@@ -168,7 +225,7 @@ async def test_get_last_invoice(aresponses: ResponsesMockServer):
             "montantTtc": 30.0,
             "natureCompte": "Mensualisation",
             "libelleTypeEcriture": "REGLEMENT",
-            "libelleModeReglement": "PRELEVEMENT BANCAIRE"
+            "libelleModeReglement": "PRELEVEMENT BANCAIRE",
         },
     )
     async with aiohttp.ClientSession() as session:

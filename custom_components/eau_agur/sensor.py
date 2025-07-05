@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Any
+from typing import Any, Callable
 
-from homeassistant.components.sensor import SensorEntityDescription, SensorDeviceClass, SensorStateClass, SensorEntity
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfVolume, CURRENCY_EURO
+from homeassistant.const import CURRENCY_EURO, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import COORDINATOR, LOGGER, DOMAIN
+from .const import COORDINATOR, DOMAIN, LOGGER
 from .coordinator import EauAgurDataUpdateCoordinator
 from .entity import EauAgurEntity
 
@@ -22,10 +22,7 @@ class EauAgurEntityDescriptionMixin:
 
 
 @dataclass
-class EauAgurEntityDescription(
-    SensorEntityDescription,
-    EauAgurEntityDescriptionMixin
-):
+class EauAgurEntityDescription(SensorEntityDescription, EauAgurEntityDescriptionMixin):
     """Describes Eau par Agur sensor entity."""
 
 
@@ -68,14 +65,14 @@ SENSORS = [
         device_class=SensorDeviceClass.MONETARY,
         state_class=SensorStateClass.TOTAL,
         value_fn=read_last_invoice,
-    )
+    ),
 ]
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        entry: ConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Eau par Agur sensor based on a config entry."""
 
@@ -101,10 +98,10 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
     """Defines a Eau par Agur sensor."""
 
     def __init__(
-            self,
-            entry_id: str,
-            coordinator: EauAgurDataUpdateCoordinator,
-            entity_description: SensorEntityDescription,
+        self,
+        entry_id: str,
+        coordinator: EauAgurDataUpdateCoordinator,
+        entity_description: SensorEntityDescription,
     ) -> None:
         """Initialize Eau par Agur sensor."""
         super().__init__(coordinator)
