@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import json
 import socket
-from datetime import datetime, timezone
 from typing import Any, Mapping
 
 import aiohttp
@@ -51,7 +50,7 @@ class AgurApiClient:
             timeout = DEFAULT_TIMEOUT
 
         self._token = None
-        self._token_expires_at = None
+        self._cookie = None
         self._session = session
         self._close_session = False
 
@@ -89,6 +88,9 @@ class AgurApiClient:
         if self._token is not None:
             headers["Token"] = self._token
 
+        if self._cookie is not None:
+            headers["Cookie"] = self._cookie
+
         if self._session is None:
             self._session = aiohttp.ClientSession()
         self._close_session = True
@@ -103,6 +105,10 @@ class AgurApiClient:
                     params=params,
                     headers=headers,
                 )
+
+            # Currently Grand sud uses a cookie to stick the session.
+            self._cookie = response.headers.get("Set-Cookie", "")
+
         except asyncio.TimeoutError as exception:
             raise AgurApiConnectionError("Timeout occurred while connecting to Agur API.") from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
@@ -139,7 +145,7 @@ class AgurApiClient:
             )
 
             self._token = response["token"]
-            self._token_expires_at = datetime.fromisoformat(response["expirationDate"]).astimezone(timezone.utc)
+
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while generating temporary token.") from exception
 
