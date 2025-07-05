@@ -26,7 +26,7 @@ from .const import (
     LOGGER,
     LOGIN_PATH,
 )
-from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
+from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiInvalidSessionError, AgurApiUnauthorizedError
 
 
 class AgurApiClient:
@@ -41,7 +41,7 @@ class AgurApiClient:
         client_id: str = CLIENT_ID,
         access_key: str = ACCESS_KEY,
         session: aiohttp.ClientSession | None = None,
-    ) -> AgurApiClient:
+    ) -> None:
         """Initialize connection with the Agur API."""
 
         if base_path is None:
@@ -78,7 +78,7 @@ class AgurApiClient:
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
 
-        LOGGER.warning("URL: %s", url)
+        LOGGER.debug("URL: %s", url)
 
         if headers is None:
             headers: dict[str, Any] = {}
@@ -87,7 +87,6 @@ class AgurApiClient:
         headers["Conversationid"] = self._conversation_id
 
         if self._token is not None:
-            LOGGER.warning("Token: %s", self._token[:18])  # Only take the first 18 characters
             headers["Token"] = self._token
 
         if self._session is None:
@@ -119,20 +118,9 @@ class AgurApiClient:
             raise AgurApiError(response.status, {"message": contents.decode("utf8")})
 
         if "application/json" in content_type:
-            json_data = await response.json()
-            LOGGER.warning("Response JSON: %s", json_data)
-            return json_data
+            return await response.json()
 
-        text = await response.text()
-        LOGGER.warning("Response Text: %s", text)
-        return {"message": text}
-
-    def is_token_expired(self) -> bool:
-        """Check if the token is expired."""
-        LOGGER.warning("Token expires at: %s", self._token_expires_at)
-        if self._token_expires_at is None:
-            return True
-        return datetime.now(timezone.utc) > self._token_expires_at
+        return {"message": await response.text()}
 
     async def generate_temporary_token(self) -> None:
         """Generate a temporary token."""
@@ -155,7 +143,7 @@ class AgurApiClient:
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while generating temporary token.") from exception
 
-    async def login(self, email: str, password: str) -> bool:
+    async def login(self, email: str, password: str) -> None:
         """Login to Agur API."""
         try:
             response = await self.request(
@@ -172,6 +160,9 @@ class AgurApiClient:
         except AgurApiError as exception:
             if exception.args[0] == 401:
                 raise AgurApiUnauthorizedError("Invalid credentials.") from exception
+
+            if exception.args[0] == 400:
+                raise AgurApiInvalidSessionError("Invalid session.") from exception
 
             raise AgurApiError("Error occurred while logging in.") from exception
 

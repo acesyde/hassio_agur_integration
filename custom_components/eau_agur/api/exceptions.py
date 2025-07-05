@@ -11,3 +11,7 @@ class AgurApiConnectionError(AgurApiError):
 
 class AgurApiUnauthorizedError(AgurApiError):
     """Agur API unauthorized exception."""
+
+
+class AgurApiInvalidSessionError(AgurApiError):
+    """Agur API invalid session exception."""

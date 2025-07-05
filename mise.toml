@@ -32,7 +32,7 @@ run = ["uv run ruff check", "uv run ruff format --check --diff"]
 
 [tasks."project:lint-fix"]
 description = "Run linting and fix"
-run = ["uv run ruff check --fix", "uv run ruff format --fix"]
+run = ["uv run ruff check --fix", "uv run ruff format"]
 
 [tasks."precommit:install"]
 description = "Install pre-commit hooks"

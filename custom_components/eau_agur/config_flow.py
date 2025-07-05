@@ -8,7 +8,13 @@ from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .api import AgurApiClient, AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
+from .api import (
+    AgurApiClient,
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiInvalidSessionError,
+    AgurApiUnauthorizedError,
+)
 from .const import CONF_CONTRACT_NUMBER, CONF_PROVIDER, DOMAIN, LOGGER, PROVIDERS
 
 
@@ -18,7 +24,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
-    async def async_step_user(self, user_input=None) -> config_entries.FlowResult:
+    async def async_step_user(self, user_input=None) -> config_entries.ConfigFlowResult:
         """Handle a flow initialized by the user."""
         _errors: dict[str, str] = {}
         if user_input is not None:
@@ -39,10 +45,23 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
                 await api_client.generate_temporary_token()
 
-                await api_client.login(
-                    user_input[CONF_EMAIL],
-                    user_input[CONF_PASSWORD],
-                )
+                # Retry login up to 4 times if we get an invalid session error
+                login_attempts = 0
+                max_login_attempts = 4
+
+                while login_attempts < max_login_attempts:
+                    try:
+                        await api_client.login(
+                            user_input[CONF_EMAIL],
+                            user_input[CONF_PASSWORD],
+                        )
+                        break  # Login successful, exit retry loop
+                    except AgurApiInvalidSessionError as err:
+                        login_attempts += 1
+                        if login_attempts >= max_login_attempts:
+                            LOGGER.error(f"Login failed after {max_login_attempts} attempts due to invalid session")
+                            raise AgurApiError("Login failed after maximum retry attempts") from err
+                        LOGGER.warning(f"Login attempt {login_attempts} failed due to invalid session, retrying...")
 
                 default_contract_id = await api_client.get_default_contract()
 

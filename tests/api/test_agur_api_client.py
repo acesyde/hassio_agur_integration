@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+import json
 from unittest.mock import patch
 
 import aiohttp
@@ -7,7 +7,12 @@ import pytest
 from aresponses import ResponsesMockServer
 
 from custom_components.eau_agur.api import AgurApiClient
-from custom_components.eau_agur.api.exceptions import AgurApiConnectionError, AgurApiError
+from custom_components.eau_agur.api.exceptions import (
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiInvalidSessionError,
+    AgurApiUnauthorizedError,
+)
 
 HOST_PATTERN = "example.com"
 
@@ -52,7 +57,7 @@ async def test_http_error400(aresponses):
         HOST_PATTERN,
         "/",
         "GET",
-        aresponses.Response(text="Bad request!", status=404),
+        aresponses.Response(text="Bad request!", status=400),
     )
 
     async with aiohttp.ClientSession() as session:
@@ -120,6 +125,56 @@ async def test_post_login(aresponses: ResponsesMockServer):
 
 
 @pytest.mark.asyncio
+async def test_post_login_invalid_session(aresponses: ResponsesMockServer):
+    """Test requesting consumption data."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/Utilisateur/authentification",
+        method_pattern="POST",
+        response=aresponses.Response(
+            status=400,
+            body=json.dumps(
+                {
+                    "severity": "Security",
+                    "message": "Session Inconnue. Veuillez rafraîchir votre page et vous reconnecter.",
+                    "according": "W/FRONT",
+                    "refLog": "LogTicket-250705-0745-c8692f2c-485a-48c3-9daa-ded89ad5d246",
+                }
+            ),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiInvalidSessionError):
+            await client.login("dupond.toto@mycompany.com", "myP@ssw0rd!")
+
+
+@pytest.mark.asyncio
+async def test_post_login_invalid_credentials(aresponses: ResponsesMockServer):
+    """Test requesting consumption data."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/Utilisateur/authentification",
+        method_pattern="POST",
+        response=aresponses.Response(
+            status=401,
+            body=json.dumps(
+                {
+                    "severity": "Security",
+                    "message": "Par sécurité au bout de 5 essais infructueux votre compte sera bloqué. Il vous reste 5 essais.",
+                    "according": "W/FRONT",
+                    "refLog": "LogTicket-250705-0923-98d60ea9-2882-42fe-ab06-43475363c192",
+                }
+            ),
+        ),
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiUnauthorizedError):
+            await client.login("dupond.toto@mycompany.com", "myP@ssw0rd!")
+
+
+@pytest.mark.asyncio
 async def test_post_generate_temporary_token(aresponses: ResponsesMockServer):
     """Test requesting generation of a temporary token."""
     aresponses.add(
@@ -177,44 +232,3 @@ async def test_get_last_invoice(aresponses: ResponsesMockServer):
         client = AgurApiClient(HOST_PATTERN, session=session)
         value = await client.get_last_invoice("12345")
         assert value == 30.0
-
-
-@pytest.mark.asyncio
-async def test_is_token_expired_none():
-    """Test is_token_expired when token_expires_at is None."""
-    async with aiohttp.ClientSession() as session:
-        client = AgurApiClient(HOST_PATTERN, session=session)
-        # By default, _token_expires_at is None
-        assert client.is_token_expired() is True
-
-
-@pytest.mark.asyncio
-async def test_is_token_expired_past():
-    """Test is_token_expired when token is expired."""
-    async with aiohttp.ClientSession() as session:
-        client = AgurApiClient(HOST_PATTERN, session=session)
-        # Set token expiration to a past datetime
-        past_time = datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
-        client._token_expires_at = past_time
-
-        # Mock current time to be after expiration
-        current_time = datetime(2023, 1, 1, 13, 0, 0, tzinfo=timezone.utc)
-        with patch("custom_components.eau_agur.api.agur_api_client.datetime") as mock_datetime:
-            mock_datetime.now.return_value = current_time
-            assert client.is_token_expired() is True
-
-
-@pytest.mark.asyncio
-async def test_is_token_expired_future():
-    """Test is_token_expired when token is not expired."""
-    async with aiohttp.ClientSession() as session:
-        client = AgurApiClient(HOST_PATTERN, session=session)
-        # Set token expiration to a future datetime
-        future_time = datetime(2023, 1, 1, 14, 0, 0, tzinfo=timezone.utc)
-        client._token_expires_at = future_time
-
-        # Mock current time to be before expiration
-        current_time = datetime(2023, 1, 1, 13, 0, 0, tzinfo=timezone.utc)
-        with patch("custom_components.eau_agur.api.agur_api_client.datetime") as mock_datetime:
-            mock_datetime.now.return_value = current_time
-            assert client.is_token_expired() is False
