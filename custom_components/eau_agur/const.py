@@ -35,4 +35,10 @@ PROVIDERS = {
         "client_id": "AEL-TOKEN-GPS-PRD",
         "access_key": "REGPS-hc-GPS-MP-PRD",
     },
+    "eauparis": {
+        "display_name": "Eau Paris",
+        "base_url": "agence.eaudeparis.fr",
+        "client_id": "AEL-TOKEN-EDP-PRD",
+        "access_key": "EDP-2-hjkUyGHT-M-PRD",
+    },
 }

@@ -11,6 +11,7 @@ _The following providers are supported :_
 
 - [EAU par Agur][eau_agur]
 - [EAU par Grand Paris Sud][eau_grandparissud]
+- [EAU de Paris][eau_de_paris]
 
 🌏
 [**Français**](README.md) |
@@ -51,6 +52,10 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 ***
 
 [eau_agur]: https://www.agur.fr/
+
+[eau_grandparissud]: https://abonne-eau.grandparissud.fr/
+
+[eau_de_paris]: https://agence.eaudeparis.fr/
 
 [commits-shield]: https://img.shields.io/github/commit-activity/y/acesyde/hassio_agur_integration.svg?style=for-the-badge
 

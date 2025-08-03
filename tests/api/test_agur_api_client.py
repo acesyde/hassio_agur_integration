@@ -11,6 +11,7 @@ from custom_components.eau_agur.api.exceptions import (
     AgurApiConnectionError,
     AgurApiError,
     AgurApiInvalidSessionError,
+    AgurApiNoBillError,
     AgurApiUnauthorizedError,
 )
 
@@ -232,3 +233,42 @@ async def test_get_last_invoice(aresponses: ResponsesMockServer):
         client = AgurApiClient(HOST_PATTERN, session=session)
         value = await client.get_last_invoice("12345")
         assert value == 30.0
+
+
+@pytest.mark.asyncio
+async def test_get_last_invoice_no_bill(aresponses: ResponsesMockServer):
+    """Test requesting last invoice when no bill is found."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/TableauDeBord/dernierReglement/12345",
+        method_pattern="GET",
+        response={
+            "montantTtc": None,
+            "natureCompte": "Mensualisation",
+            "libelleTypeEcriture": "REGLEMENT",
+            "libelleModeReglement": "PRELEVEMENT BANCAIRE",
+        },
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiNoBillError):
+            await client.get_last_invoice("12345")
+
+
+@pytest.mark.asyncio
+async def test_get_last_invoice_missing_montant_ttc(aresponses: ResponsesMockServer):
+    """Test requesting last invoice when montantTtc is missing from response."""
+    aresponses.add(
+        host_pattern=HOST_PATTERN,
+        path_pattern="/webapi/TableauDeBord/dernierReglement/12345",
+        method_pattern="GET",
+        response={
+            "natureCompte": "Mensualisation",
+            "libelleTypeEcriture": "REGLEMENT",
+            "libelleModeReglement": "PRELEVEMENT BANCAIRE",
+        },
+    )
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with pytest.raises(AgurApiNoBillError):
+            await client.get_last_invoice("12345")
