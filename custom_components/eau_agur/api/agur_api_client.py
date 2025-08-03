@@ -26,7 +26,13 @@ from .const import (
     LOGGER,
     LOGIN_PATH,
 )
-from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiInvalidSessionError, AgurApiUnauthorizedError
+from .exceptions import (
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiInvalidSessionError,
+    AgurApiNoBillError,
+    AgurApiUnauthorizedError,
+)
 
 aiohttp_client_logger = logging.getLogger("aiohttp.client")
 aiohttp_client_logger.setLevel(logging.DEBUG)
@@ -199,8 +205,13 @@ class AgurApiClient:
         try:
             response = await self.request(f"{GET_LAST_INVOICE_PATH}{contract_id}", "GET")
 
+            if response.get("montantTtc") is None:
+                raise AgurApiNoBillError("No bill found.")
+
             return response["montantTtc"]
 
+        except AgurApiNoBillError:
+            raise
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting last invoice.") from exception
 

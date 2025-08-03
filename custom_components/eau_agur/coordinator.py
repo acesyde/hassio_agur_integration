@@ -7,6 +7,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from custom_components.eau_agur.api.exceptions import AgurApiNoBillError
+
 from .api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
 from .const import CONF_CONTRACT_NUMBER, DOMAIN, LOGGER, SCAN_INTERVAL_IN_MINUTES
 
@@ -80,6 +82,9 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
 
         try:
             return await self._api_client.get_last_invoice(self._contract_number)
+        except AgurApiNoBillError as err:
+            LOGGER.error(f"No bill found: {err}")
+            return None
         except AgurApiConnectionError as err:
             LOGGER.error(f"Error communicating with API: {err}")
             return None

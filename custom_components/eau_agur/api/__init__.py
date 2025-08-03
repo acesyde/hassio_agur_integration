@@ -1,7 +1,13 @@
 """Api package for EAU par Agur."""
 
 from .agur_api_client import AgurApiClient
-from .exceptions import AgurApiConnectionError, AgurApiError, AgurApiInvalidSessionError, AgurApiUnauthorizedError
+from .exceptions import (
+    AgurApiConnectionError,
+    AgurApiError,
+    AgurApiInvalidSessionError,
+    AgurApiNoBillError,
+    AgurApiUnauthorizedError,
+)
 
 __all__ = [
     "AgurApiClient",
@@ -9,4 +15,5 @@ __all__ = [
     "AgurApiError",
     "AgurApiUnauthorizedError",
     "AgurApiInvalidSessionError",
+    "AgurApiNoBillError",
 ]
