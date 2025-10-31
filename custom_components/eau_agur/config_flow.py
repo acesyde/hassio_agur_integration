@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
@@ -100,6 +102,80 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                             ],
                             mode=selector.SelectSelectorMode.DROPDOWN,
                         ),
+                    ),
+                }
+            ),
+            errors=_errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Handle a reconfiguration flow initialized by the user."""
+        entry_id = self.context.get("entry_id")
+        if entry_id is None:
+            return self.async_abort(reason="reconfigure_failed")
+        
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if entry is None:
+            return self.async_abort(reason="reconfigure_failed")
+        
+        _errors: dict[str, str] = {}
+        
+        if user_input is not None:
+            try:
+                # Get provider and email from existing entry (not from user input)
+                provider = entry.data.get(CONF_PROVIDER)
+                email = entry.data.get(CONF_EMAIL)
+                password = user_input[CONF_PASSWORD]
+
+                config_provider = PROVIDERS.get(provider, None)
+                if config_provider is None:
+                    raise AgurApiError("Provider not found")
+
+                # Validate new credentials
+                api_client = AgurApiClient(
+                    host=config_provider["base_url"],
+                    base_path=config_provider.get("base_path", None),
+                    timeout=config_provider.get("default_timeout", None),
+                    client_id=config_provider["client_id"],
+                    access_key=config_provider["access_key"],
+                    session=async_create_clientsession(
+                        self.hass, cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False)
+                    ),
+                )
+
+                await api_client.generate_temporary_token()
+
+                await api_client.login(email, password)
+
+                # Update entry data - only password is updated
+                updated_data = {
+                    **entry.data,
+                    CONF_PASSWORD: password
+                }
+
+                return self.async_update_reload_and_abort(entry, data=updated_data)
+
+            except AgurApiUnauthorizedError as exception:
+                LOGGER.warning(exception)
+                _errors["base"] = "auth"
+
+            except AgurApiConnectionError as exception:
+                LOGGER.error(exception)
+                _errors["base"] = "connection"
+
+            except AgurApiError as exception:
+                LOGGER.exception(exception)
+                _errors["base"] = "unknown"
+
+        # Show form with only password field
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_PASSWORD): selector.TextSelector(
+                        selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD),
                     ),
                 }
             ),

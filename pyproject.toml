@@ -9,22 +9,22 @@ keywords = ["homeassistant", "hassio", "eau", "agur", "water"]
 readme = "README.md"
 repository = "https://github.com/acesyde/hassio_agur_integration"
 dependencies = [
-  "colorlog >= 6.7",
-  "homeassistant >= 2025.7.0",
-  "requests >= 2.31",
-  "aiohttp >= 3.8",
-  "yarl >= 1.9",
-  "async-timeout >= 5.0",
+  "colorlog >= 6.10.1",
+  "homeassistant >= 2025.9.4",
+  "requests >= 2.32.5",
+  "aiohttp >= 3.12.15",
+  "yarl >= 1.20.1",
+  "async-timeout >= 5.0.1",
 ]
 
 [dependency-groups]
 dev = [
-  "pytest >= 8.4.1",
-  "pytest-cov >= 6.2.1",
-  "pytest-socket >= 0.6",
-  "ruff >= 0.4",
+  "pytest >= 8.4.2",
+  "pytest-cov >= 7.0.0",
+  "pytest-socket >= 0.7.0",
+  "ruff >= 0.14.3",
   "aresponses >= 3.0.0",
-  "vulture >= 2.9",
+  "vulture >= 2.14",
 ]
 
 [tool.ruff]
