@@ -52,3 +52,4 @@ coverage.xml
 
 # Mise
 mise.local.toml
+hassio_dev/.ha_run.lock

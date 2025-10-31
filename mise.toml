@@ -1,7 +1,7 @@
 [tools]
-pre-commit = "4.2"
-python = "3.13"
-uv = "0.8.4"
+pre-commit = "4.3"
+python = "3.13.9"
+uv = "0.9.7"
 
 [settings]
 experimental = true
