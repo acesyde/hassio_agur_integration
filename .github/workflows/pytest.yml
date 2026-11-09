@@ -18,14 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: jdx/mise-action@v3
+      - uses: jdx/mise-action@v5
         name: 🤖 Mise action
         with:
-          version: 2025.7.0
+          version: 2026.10.7
 
       - name: 📦 Install requirements
         run: mise project:setup
@@ -37,9 +37,9 @@ jobs:
         run: mise project:coverage
 
       - name: 📤 Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           name: pytest
           fail_ci_if_error: true
-          file: coverage.xml
+          files: coverage.xml
