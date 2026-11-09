@@ -3,14 +3,14 @@ name = "eau_agur"
 version = "0.1.0"
 description = "EAU par Agur integration for Home Assistant"
 authors = [{ name = "Pierre-Emmanuel Mercier", email = "acesyde@gmail.com" }]
-requires-python = ">=3.13.2,<4.0"
+requires-python = ">=3.14.2,<4.0"
 license = "MIT"
 keywords = ["homeassistant", "hassio", "eau", "agur", "water"]
 readme = "README.md"
 repository = "https://github.com/acesyde/hassio_agur_integration"
 dependencies = [
   "colorlog >= 6.10.1",
-  "homeassistant >= 2025.9.4",
+  "homeassistant >= 2026.11.0",
   "requests >= 2.32.5",
   "aiohttp >= 3.12.15",
   "yarl >= 1.20.1",
