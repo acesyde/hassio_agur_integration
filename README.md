@@ -4,7 +4,7 @@
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
 
-[![hacs][hacsbadge]][hacs]
+[![marketplace][marketplacebadge]][marketplace]
 ![Project Maintenance][maintenance-shield]
 
 _Intégration pour les providers suivants :_
@@ -29,9 +29,17 @@ Français |
 
 ## Installation
 
-### Automatique
+### Marketplace Home Assistant (2026.11+)
 
-[![Ouvrez votre instance Home Assistant et ajouter un dépôt personnalisé.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
+1. Dans Home Assistant, allez dans **Paramètres → Marketplace**.
+2. Choisissez **Add from link**, collez `https://github.com/acesyde/hassio_agur_integration` et connectez votre compte GitHub si demandé.
+3. Installez **EAU par Agur**, puis redémarrez Home Assistant.
+
+Ou cliquez sur ce bouton :
+
+[![Ouvrez votre instance Home Assistant et ouvrez un dépôt dans le Home Assistant Marketplace.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=acesyde&repository=hassio_agur_integration&category=integration)
+
+> Depuis 2026.11, HACS est intégré à Home Assistant sous le nom de Marketplace. Les installations existantes via HACS sont migrées automatiquement.
 
 ### Manuelle
 
@@ -61,9 +69,9 @@ Si vous souhaitez y contribuer, veuillez lire les [Directives de contribution](C
 
 [commits]: https://github.com/acesyde/hassio_agur_integration/commits/main
 
-[hacs]: https://github.com/hacs/integration
+[marketplace]: https://www.home-assistant.io/integrations/marketplace/#custom-repositories
 
-[hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
+[marketplacebadge]: https://img.shields.io/badge/Marketplace-Custom-orange.svg?style=for-the-badge
 
 [license-shield]: https://img.shields.io/github/license/acesyde/hassio_agur_integration.svg?style=for-the-badge
 
