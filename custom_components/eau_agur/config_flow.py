@@ -108,20 +108,18 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=_errors,
         )
 
-    async def async_step_reconfigure(
-        self, user_input: dict[str, Any] | None = None
-    ) -> config_entries.ConfigFlowResult:
+    async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> config_entries.ConfigFlowResult:
         """Handle a reconfiguration flow initialized by the user."""
         entry_id = self.context.get("entry_id")
         if entry_id is None:
             return self.async_abort(reason="reconfigure_failed")
-        
+
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if entry is None:
             return self.async_abort(reason="reconfigure_failed")
-        
+
         _errors: dict[str, str] = {}
-        
+
         if user_input is not None:
             try:
                 # Get provider and email from existing entry (not from user input)
@@ -150,10 +148,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 await api_client.login(email, password)
 
                 # Update entry data - only password is updated
-                updated_data = {
-                    **entry.data,
-                    CONF_PASSWORD: password
-                }
+                updated_data = {**entry.data, CONF_PASSWORD: password}
 
                 return self.async_update_reload_and_abort(entry, data=updated_data)
 
