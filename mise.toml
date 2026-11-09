@@ -1,11 +1,13 @@
 [tools]
-pre-commit = "4.3"
-python = "3.13.9"
-uv = "0.9.7"
+pre-commit = "4.6"
+python = "3.14.10"
+uv = "0.13.0"
 
 [settings]
 experimental = true
 auto_install = false
+minimum_release_age = "30d"
+lockfile = true
 
 [env]
 _.python.venv = { path = ".venv", create = true }
