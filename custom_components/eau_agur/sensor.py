@@ -115,6 +115,14 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
         return self.entity_description.value_fn(self.coordinator.data)
 
     @property
+    def extra_state_attributes(self) -> dict[str, str] | None:
+        """Return the current reading date for the consumption sensor."""
+        reading_date = self.coordinator.data.get("consumption_date")
+        if self.entity_description.key == "total_liters" and isinstance(reading_date, str):
+            return {"reading_date": reading_date}
+        return None
+
+    @property
     def available(self) -> bool:
         """Return True if last update was successful."""
         return self.coordinator.last_update_success

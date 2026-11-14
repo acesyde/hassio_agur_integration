@@ -50,8 +50,10 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             await self._api_client.login(self._email, self._password)
 
             # Get the consumption data
+            consumption = await self.async_get_consumption()
             result = {
-                "consumption": await self.async_get_consumption(),
+                "consumption": consumption["index"] if consumption else None,
+                "consumption_date": consumption["date"] if consumption else None,
                 "last_invoice": await self.async_get_last_invoice(),
             }
 
@@ -62,7 +64,7 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             # and start a config flow with SOURCE_REAUTH (async_step_reauth)
             raise ConfigEntryAuthFailed from err
 
-    async def async_get_consumption(self) -> float | None:
+    async def async_get_consumption(self) -> dict[str, Any] | None:
         """Return the consumption data."""
         if not self._contract_number:
             LOGGER.error("Contract number not available")
