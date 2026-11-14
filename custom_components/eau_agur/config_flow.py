@@ -90,6 +90,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
+            description_placeholders={"documentation_url": "https://github.com/acesyde/hassio_agur_integration"},
             data_schema=vol.Schema(
                 {
                     vol.Required(

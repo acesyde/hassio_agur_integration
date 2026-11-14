@@ -11,6 +11,15 @@ from custom_components.eau_agur.api import AgurApiConnectionError, AgurApiUnauth
 
 
 @pytest.mark.asyncio
+async def test_user_form_provides_documentation_placeholder():
+    """The help link is supplied by the flow rather than embedded in translations."""
+    result = await config_flow.EauAgurFlowHandler().async_step_user()
+    assert result["description_placeholders"] == {
+        "documentation_url": "https://github.com/acesyde/hassio_agur_integration"
+    }
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("step", ["user", "reconfigure"])
 @pytest.mark.parametrize(
     "failure",
