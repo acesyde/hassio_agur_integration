@@ -30,20 +30,24 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         _errors: dict[str, str] = {}
         if user_input is not None:
+            session = None
             try:
                 config_provider = PROVIDERS.get(user_input[CONF_PROVIDER], None)
                 if config_provider is None:
                     raise AgurApiError("Provider not found")
 
+                session = async_create_clientsession(
+                    self.hass,
+                    auto_cleanup=False,
+                    cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False),
+                )
                 api_client = AgurApiClient(
                     host=config_provider["base_url"],
                     base_path=config_provider.get("base_path", None),
                     timeout=config_provider.get("default_timeout", None),
                     client_id=config_provider["client_id"],
                     access_key=config_provider["access_key"],
-                    session=async_create_clientsession(
-                        self.hass, cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False)
-                    ),
+                    session=session,
                 )
 
                 await api_client.generate_temporary_token()
@@ -80,9 +84,13 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             else:
                 return self.async_create_entry(title="EAU par Agur", data=data)
+            finally:
+                if session is not None:
+                    session.detach()
 
         return self.async_show_form(
             step_id="user",
+            description_placeholders={"documentation_url": "https://github.com/acesyde/hassio_agur_integration"},
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -121,6 +129,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors: dict[str, str] = {}
 
         if user_input is not None:
+            session = None
             try:
                 # Get provider and email from existing entry (not from user input)
                 provider = entry.data.get(CONF_PROVIDER)
@@ -132,15 +141,18 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     raise AgurApiError("Provider not found")
 
                 # Validate new credentials
+                session = async_create_clientsession(
+                    self.hass,
+                    auto_cleanup=False,
+                    cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False),
+                )
                 api_client = AgurApiClient(
                     host=config_provider["base_url"],
                     base_path=config_provider.get("base_path", None),
                     timeout=config_provider.get("default_timeout", None),
                     client_id=config_provider["client_id"],
                     access_key=config_provider["access_key"],
-                    session=async_create_clientsession(
-                        self.hass, cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False)
-                    ),
+                    session=session,
                 )
 
                 await api_client.generate_temporary_token()
@@ -163,6 +175,9 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             except AgurApiError as exception:
                 LOGGER.exception(exception)
                 _errors["base"] = "unknown"
+            finally:
+                if session is not None:
+                    session.detach()
 
         # Show form with only password field
         return self.async_show_form(

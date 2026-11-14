@@ -272,3 +272,71 @@ async def test_get_last_invoice_missing_montant_ttc(aresponses: ResponsesMockSer
         client = AgurApiClient(HOST_PATTERN, session=session)
         with pytest.raises(AgurApiNoBillError):
             await client.get_last_invoice("12345")
+
+
+@pytest.mark.asyncio
+async def test_cookie_and_token_isolation_across_refreshes(aresponses: ResponsesMockServer):
+    """Two accounts retain their own affinity cookies through repeated authentication."""
+    cycle = 0
+    conversations = {}
+    previous_cookies = [None, None, "affinity-1", "affinity-2"]
+    accounts = ["first@example.com", "second@example.com"] * 2
+
+    async def generate_token(request):
+        nonlocal cycle
+        assert request.headers["Token"] == "access-key"  # noqa: S105
+        assert request.cookies.get("affinity") == previous_cookies[cycle]
+        cycle += 1
+        conversation = request.headers["ConversationId"]
+        assert (await request.json())["ConversationId"] == conversation
+        conversations[cycle] = conversation
+        return aresponses.Response(
+            text=json.dumps({"token": f"temporary-{cycle}"}),
+            headers={"Content-Type": "application/json", "Set-Cookie": f"affinity=affinity-{cycle}; Path=/"},
+        )
+
+    async def login(request):
+        assert request.headers["Token"] == f"temporary-{cycle}"
+        assert request.headers["ConversationId"] == conversations[cycle]
+        assert request.cookies["affinity"] == f"affinity-{cycle}"
+        assert (await request.json())["identifiant"] == accounts[cycle - 1]
+        return aresponses.Response(
+            text=json.dumps({"tokenAuthentique": f"authenticated-{cycle}"}),
+            headers={"Content-Type": "application/json"},
+        )
+
+    async def consumption(request):
+        assert request.headers["Token"] == f"authenticated-{cycle}"
+        assert request.headers["ConversationId"] == conversations[cycle]
+        assert request.cookies["affinity"] == f"affinity-{cycle}"
+        return aresponses.Response(text='{"valeurIndex": 123}', headers={"Content-Type": "application/json"})
+
+    for _ in range(4):
+        aresponses.add(HOST_PATTERN, "/webapi/Acces/generateToken", "POST", generate_token)
+        aresponses.add(HOST_PATTERN, "/webapi/Utilisateur/authentification", "POST", login)
+        aresponses.add(HOST_PATTERN, "/webapi/TableauDeBord/derniereConsommationFacturee/12345", "GET", consumption)
+
+    async with aiohttp.ClientSession() as first, aiohttp.ClientSession() as second:
+        clients = [AgurApiClient(HOST_PATTERN, access_key="access-key", session=session) for session in (first, second)]
+        for index, account in enumerate(accounts):
+            client = clients[index % 2]
+            await client.generate_temporary_token()
+            await client.login(account, "password")
+            assert await client.get_consumption("12345") == 123
+        await clients[0].close()
+        assert not first.closed
+        assert not second.closed
+
+    aresponses.assert_plan_strictly_followed()
+
+
+@pytest.mark.asyncio
+async def test_client_closes_only_its_own_session(aresponses: ResponsesMockServer):
+    """A standalone client still closes the session it created itself."""
+    aresponses.add(HOST_PATTERN, "/", "GET", response={"message": "ok"})
+    client = AgurApiClient(HOST_PATTERN)
+    async with client:
+        await client.request("/")
+        session = client._session
+        assert not session.closed
+    assert session.closed
