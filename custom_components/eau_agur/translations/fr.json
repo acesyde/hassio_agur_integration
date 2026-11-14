@@ -30,7 +30,10 @@
         "name": "Litres total"
       },
       "last_invoice": {
-        "name": "Dernière facture"
+        "name": "Dernier règlement"
+      },
+      "last_issued_invoice": {
+        "name": "Dernière facture émise"
       },
       "balance": {
         "name": "Solde du contrat"

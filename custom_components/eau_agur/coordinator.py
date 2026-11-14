@@ -51,11 +51,14 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
 
             # Get the consumption data
             consumption = await self.async_get_consumption()
+            issued_invoice = await self.async_get_last_issued_invoice()
             result = {
                 "consumption": consumption["index"] if consumption else None,
                 "consumption_date": consumption["date"] if consumption else None,
                 "last_invoice": await self.async_get_last_invoice(),
                 "balance": await self.async_get_balance(),
+                "last_issued_invoice": issued_invoice["amount"] if issued_invoice else None,
+                "last_issued_invoice_date": issued_invoice["issue_date"] if issued_invoice else None,
             }
 
             return result
@@ -89,8 +92,20 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             LOGGER.warning("Unable to retrieve the account balance")
             return None
 
+    async def async_get_last_issued_invoice(self) -> dict[str, float | str] | None:
+        """Read the issued invoice without substituting a payment on failure."""
+        if not self._contract_number:
+            return None
+        try:
+            return await self._api_client.get_last_issued_invoice(self._contract_number)
+        except AgurApiUnauthorizedError:
+            raise
+        except AgurApiError:
+            LOGGER.warning("Unable to retrieve the latest issued invoice")
+            return None
+
     async def async_get_last_invoice(self) -> float | None:
-        """Return the last invoice data."""
+        """Return the last payment data under its legacy key."""
         if not self._contract_number:
             LOGGER.error("Contract number not available")
             return None

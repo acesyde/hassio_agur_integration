@@ -16,13 +16,21 @@ async def test_coordinator_keeps_index_and_current_date_together():
         get_consumption=AsyncMock(return_value={"index": 10, "date": "2023-08-29"}),
         get_last_invoice=AsyncMock(return_value=20),
         get_balance=AsyncMock(return_value=0),
+        get_last_issued_invoice=AsyncMock(return_value=None),
     )
     coordinator._email = "user@example.com"
     coordinator._password = "test-credential"  # noqa: S105
     coordinator._contract_number = "123"
 
     data = await coordinator._async_update_data()
-    assert data == {"consumption": 10, "consumption_date": "2023-08-29", "last_invoice": 20, "balance": 0}
+    assert data == {
+        "consumption": 10,
+        "consumption_date": "2023-08-29",
+        "last_invoice": 20,
+        "balance": 0,
+        "last_issued_invoice": None,
+        "last_issued_invoice_date": None,
+    }
 
     coordinator._api_client.get_consumption.return_value = {"index": 10, "date": None}
     data = await coordinator._async_update_data()
@@ -39,6 +47,7 @@ async def test_failed_consumption_refresh_clears_date_and_value():
         get_consumption=AsyncMock(side_effect=AgurApiConnectionError("offline")),
         get_last_invoice=AsyncMock(return_value=20),
         get_balance=AsyncMock(return_value=0),
+        get_last_issued_invoice=AsyncMock(return_value=None),
     )
     coordinator._email = "user@example.com"
     coordinator._password = "test-credential"  # noqa: S105

@@ -24,10 +24,15 @@ Français |
 | `total_liters` | Dernier index du compteur communiqué par le portail | L |
 | `last_invoice` | Montant du dernier règlement communiqué par le portail | € |
 | `balance` | Solde comptable du contrat | € |
+| `last_issued_invoice` | Montant de la dernière facture émise | € |
 
 Le capteur `total_liters` expose l’attribut `reading_date` avec la date réelle du relevé lorsqu’elle est fournie et valide. Cette date peut être antérieure au dernier rafraîchissement de l’intégration.
 
-Le capteur `last_invoice` porte par défaut le nom « Dernière facture » dans l’interface, mais sa donnée provient du dernier règlement du portail.
+Le capteur historique `last_invoice` porte désormais le nom « Dernier règlement » : il conserve sa valeur de paiement, son identifiant et son historique. Le nouveau capteur « Dernière facture émise » demande au portail les factures triées par date d’émission décroissante et vérifie l’ordre reçu. La première page suffit normalement ; les suivantes ne sont lues que si la date la plus récente s’étend sur plusieurs pages. Un prélèvement mensuel peut donc différer du montant de la facture.
+
+Le capteur « Dernière facture émise » expose aussi l’attribut `issue_date` : la date d’émission au format ISO avec fuseau horaire. Cet attribut disparaît si aucune facture n’est disponible ou si sa lecture échoue, sans appel API supplémentaire.
+
+Le nouveau capteur conserve les factures à zéro et les avoirs négatifs. En l’absence de facture ou si sa lecture échoue, il reste inconnu, sans remplacer sa valeur par celle du règlement. Il ne représente pas un cumul de dépenses. Les noms personnalisés et les identifiants existants ne sont pas renommés automatiquement ; le nouvel historique de facture démarre à l’installation.
 
 Le solde conserve le signe fourni par le portail, y compris zéro et les montants négatifs. Il ne représente pas le coût cumulé de l’eau. Une erreur de lecture du solde laisse les autres données disponibles ; les erreurs d’authentification restent traitées au niveau du compte.
 

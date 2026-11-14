@@ -24,10 +24,15 @@ English
 | `total_liters` | Latest meter index reported by the portal | L |
 | `last_invoice` | Latest payment amount reported by the portal | € |
 | `balance` | Contract account balance | € |
+| `last_issued_invoice` | Latest issued invoice amount | € |
 
 The `total_liters` sensor exposes a `reading_date` attribute when the actual reading date is provided and valid. This date may be earlier than the integration's latest refresh.
 
-The `last_invoice` sensor has the default name “Last invoice” in the interface, but its value comes from the portal's latest payment.
+The existing `last_invoice` sensor is now named “Last payment”: it retains its payment value, entity ID and history. The new “Last issued invoice” sensor requests invoices sorted by descending issue date and checks the returned order. Normally only the first page is needed; further pages are read only if the latest issue date spans several pages. A monthly direct debit can therefore differ from the invoice amount.
+
+The “Last issued invoice” sensor also exposes `issue_date`: its issue timestamp in ISO format with timezone. The attribute is removed when no invoice is available or its lookup fails, with no additional API request.
+
+The new sensor preserves zero invoices and negative credit notes. With no invoice or a failed read, it stays unknown rather than substituting the payment amount. It does not represent cumulative spending. Customized names and existing entity IDs are not automatically renamed; the new invoice history starts when installed.
 
 The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. A balance-reading error leaves the other data available; authentication errors are still handled at account level.
 
