@@ -118,6 +118,15 @@ async def test_balance_authentication_failure_is_not_swallowed(coordinator):
         await coordinator._async_update_data()
 
 
+def test_last_invoice_exposes_native_euro_unit():
+    coordinator = Mock(config_entry=Mock(entry_id="entry"), data={"last_invoice": 30})
+    description = next(description for description in SENSORS if description.key == "last_invoice")
+    sensor = EauAgurSensor("entry", coordinator, description)
+    assert sensor.native_unit_of_measurement == "€"
+    assert sensor.native_value == 30
+    assert sensor.unique_id == "entry_last_invoice"
+
+
 def test_balance_sensor_keeps_signed_values_and_existing_ids():
     coordinator = Mock(config_entry=Mock(entry_id="entry"), data={"balance": 50}, last_update_success=True)
     sensors = {description.key: EauAgurSensor("entry", coordinator, description) for description in SENSORS}
