@@ -24,7 +24,6 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for  EAU par Agur."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     async def async_step_user(self, user_input=None) -> config_entries.ConfigFlowResult:
         """Handle a flow initialized by the user."""
