@@ -106,6 +106,8 @@ async def async_setup_entry(
 class EauAgurSensor(EauAgurEntity, SensorEntity):
     """Defines a Eau par Agur sensor."""
 
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         entry_id: str,
@@ -114,7 +116,6 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
     ) -> None:
         """Initialize Eau par Agur sensor."""
         super().__init__(coordinator)
-        self.entity_id = f"{DOMAIN}.{entity_description.key}"
         self._attr_unique_id = f"{entry_id}_{entity_description.key}"
         self.entity_description = entity_description
 

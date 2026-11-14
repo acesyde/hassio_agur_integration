@@ -17,20 +17,29 @@ _Intégration pour les providers suivants :_
 Français |
 [**English**](README.en.md)
 
-**L'intégration ajoutera les composants suivants.**
+## Capteurs
 
-| Platform              | Description                    | Unit | Implemented        |
-|-----------------------|--------------------------------|------|--------------------|
-| `sensor.total_liters` | Nombre de litres consommés     | L    | :white_check_mark: |
-| `sensor.last_invoice` | Montant de la dernière facture | €    | :white_check_mark: |
-| `sensor.balance` | Solde comptable du contrat | € | :white_check_mark: |
+| Clé du capteur | Donnée fournie | Unité |
+|----------------|----------------|-------|
+| `total_liters` | Dernier index du compteur communiqué par le portail | L |
+| `last_invoice` | Montant du dernier règlement communiqué par le portail | € |
+| `balance` | Solde comptable du contrat | € |
 
-Le capteur `sensor.total_liters` expose l’attribut `reading_date` avec la date réelle du relevé lorsqu’elle est fournie et valide.
+Le capteur `total_liters` expose l’attribut `reading_date` avec la date réelle du relevé lorsqu’elle est fournie et valide. Cette date peut être antérieure au dernier rafraîchissement de l’intégration.
 
-Le solde conserve le signe fourni par le portail, y compris zéro et les montants négatifs. Il ne représente pas le coût cumulé de l’eau. Si sa lecture échoue, seul ce montant devient inconnu.
+Le capteur `last_invoice` porte par défaut le nom « Dernière facture » dans l’interface, mais sa donnée provient du dernier règlement du portail.
 
-> [!NOTE]
-> Les données sont mises à jour toutes les 24h.
+Le solde conserve le signe fourni par le portail, y compris zéro et les montants négatifs. Il ne représente pas le coût cumulé de l’eau. Une erreur de lecture du solde laisse les autres données disponibles ; les erreurs d’authentification restent traitées au niveau du compte.
+
+### Identifiants des entités
+
+Les clés ci-dessus ne sont pas des identifiants complets. Pour les **nouvelles entités**, Home Assistant génère les identifiants `sensor.…` selon le format choisi dans ses paramètres : pièce, appareil parent, appareil et entité. Les éléments sans valeur sont omis ; les noms dépendent des informations disponibles et de la langue choisie pour les identifiants.
+
+Les identifiants des **entités déjà enregistrées**, y compris les noms personnalisés, sont conservés lors d’une mise à jour. Modifier le format de nommage ne les renomme pas automatiquement. Pour appliquer un autre nom à une entité existante, modifiez son identifiant dans ses paramètres et vérifiez les références dans vos automatisations et tableaux de bord.
+
+### Actualisation
+
+L’intégration interroge le portail toutes les **4 heures**. La disponibilité de nouveaux relevés dépend du fournisseur : les données ne sont pas des mesures en temps réel.
 
 ## Installation
 
