@@ -17,20 +17,29 @@ _The following providers are supported :_
 [**Français**](README.md) |
 English
 
-**This integration will set up the following platforms.**
+## Sensors
 
-| Platform              | Description      | Unit | Implemented        |
-|-----------------------|------------------|------|--------------------|
-| `sensor.total_liters` | Number of liters | L    | :white_check_mark: |
-| `sensor.last_invoice` | Last invoice     | €    | :white_check_mark: |
-| `sensor.balance` | Account balance | € | :white_check_mark: |
+| Sensor key | Reported data | Unit |
+|------------|---------------|------|
+| `total_liters` | Latest meter index reported by the portal | L |
+| `last_invoice` | Latest payment amount reported by the portal | € |
+| `balance` | Contract account balance | € |
 
-The `sensor.total_liters` sensor exposes a `reading_date` attribute when the actual reading date is provided and valid.
+The `total_liters` sensor exposes a `reading_date` attribute when the actual reading date is provided and valid. This date may be earlier than the integration's latest refresh.
 
-The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. If retrieving it fails, only this amount becomes unknown.
+The `last_invoice` sensor has the default name “Last invoice” in the interface, but its value comes from the portal's latest payment.
 
-> [!NOTE]
-> Data is updated every 24h.
+The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. A balance-reading error leaves the other data available; authentication errors are still handled at account level.
+
+### Entity IDs
+
+The keys above are not full entity IDs. For **new entities**, Home Assistant generates `sensor.…` IDs using the format selected in its settings: area, parent device, device and entity. Parts without a value are omitted; names depend on the available information and the selected entity-ID language.
+
+IDs of **existing registered entities**, including customized IDs, are preserved during an update. Changing the naming format does not rename them automatically. To rename an existing entity, edit its ID in its settings and check references in your automations and dashboards.
+
+### Updates
+
+The integration polls the portal every **4 hours**. New readings depend on the provider's own update schedule; these are not real-time measurements.
 
 ## Installation
 
