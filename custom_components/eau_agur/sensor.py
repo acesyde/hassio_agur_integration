@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
+from homeassistant.components.sensor import (
+    ENTITY_ID_FORMAT,
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CURRENCY_EURO, UnitOfVolume
 from homeassistant.core import HomeAssistant
@@ -114,7 +120,7 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
     ) -> None:
         """Initialize Eau par Agur sensor."""
         super().__init__(coordinator)
-        self.entity_id = f"{DOMAIN}.{entity_description.key}"
+        self.entity_id = ENTITY_ID_FORMAT.format(entity_description.key)
         self._attr_unique_id = f"{entry_id}_{entity_description.key}"
         self.entity_description = entity_description
 
