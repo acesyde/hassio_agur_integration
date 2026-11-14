@@ -1,6 +1,6 @@
 import asyncio
 import json
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import aiohttp
 import pytest
@@ -212,7 +212,32 @@ async def test_get_consumption(aresponses: ResponsesMockServer):
     async with aiohttp.ClientSession() as session:
         client = AgurApiClient(HOST_PATTERN, session=session)
         value = await client.get_consumption("12345")
-        assert value == 448667.0
+        assert value == {"index": 448667.0, "date": "2023-08-29T23:45:43+02:00"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("reading_date", "expected"),
+    [
+        ("2023-08-29", "2023-08-29"),
+        ("2023-08-29T23:45:43Z", "2023-08-29T23:45:43Z"),
+        ("2023-08-29T23:45:43+01:00", "2023-08-29T23:45:43+01:00"),
+        ("2023-08-29T23:45:43", None),
+        ("2023-02-30T23:45:43+01:00", None),
+        (None, None),
+        ("", None),
+        ("not a date", None),
+        (42, None),
+    ],
+)
+async def test_get_consumption_validates_optional_date(reading_date, expected):
+    """An invalid optional date never discards a valid index."""
+    async with aiohttp.ClientSession() as session:
+        client = AgurApiClient(HOST_PATTERN, session=session)
+        with patch.object(
+            client, "request", new=AsyncMock(return_value={"valeurIndex": 7, "dateReleve": reading_date})
+        ):
+            assert await client.get_consumption("12345") == {"index": 7, "date": expected}
 
 
 @pytest.mark.asyncio
@@ -322,7 +347,7 @@ async def test_cookie_and_token_isolation_across_refreshes(aresponses: Responses
             client = clients[index % 2]
             await client.generate_temporary_token()
             await client.login(account, "password")
-            assert await client.get_consumption("12345") == 123
+            assert await client.get_consumption("12345") == {"index": 123, "date": None}
         await clients[0].close()
         assert not first.closed
         assert not second.closed

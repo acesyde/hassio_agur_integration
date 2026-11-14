@@ -24,6 +24,8 @@ English
 | `sensor.total_liters` | Number of liters | L    | :white_check_mark: |
 | `sensor.last_invoice` | Last invoice     | €    | :white_check_mark: |
 
+The `sensor.total_liters` sensor exposes a `reading_date` attribute when the actual reading date is provided and valid.
+
 > [!NOTE]
 > Data is updated every 24h.
 

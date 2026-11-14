@@ -7,6 +7,7 @@ import json
 import logging
 import socket
 import uuid
+from datetime import date, datetime
 from typing import Any, Mapping
 
 import aiohttp
@@ -190,12 +191,25 @@ class AgurApiClient:
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting default contract.") from exception
 
-    async def get_consumption(self, contract_id: str) -> float:
+    async def get_consumption(self, contract_id: str) -> dict[str, Any]:
         """Get consumption."""
         try:
             response = await self.request(f"{GET_CONSUMPTION_PATH}{contract_id}", "GET")
-
-            return response["valeurIndex"]
+            reading_date = response.get("dateReleve")
+            if isinstance(reading_date, str) and reading_date:
+                try:
+                    date.fromisoformat(reading_date)
+                except ValueError:
+                    try:
+                        parsed = datetime.fromisoformat(reading_date)
+                        if parsed.tzinfo is None:
+                            reading_date = None
+                    except ValueError:
+                        LOGGER.warning("Ignoring invalid reading date")
+                        reading_date = None
+            else:
+                reading_date = None
+            return {"index": response["valeurIndex"], "date": reading_date}
 
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting consumption.") from exception

@@ -24,6 +24,8 @@ Français |
 | `sensor.total_liters` | Nombre de litres consommés     | L    | :white_check_mark: |
 | `sensor.last_invoice` | Montant de la dernière facture | €    | :white_check_mark: |
 
+Le capteur `sensor.total_liters` expose l’attribut `reading_date` avec la date réelle du relevé lorsqu’elle est fournie et valide.
+
 > [!NOTE]
 > Les données sont mises à jour toutes les 24h.
 
