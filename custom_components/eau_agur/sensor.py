@@ -134,10 +134,13 @@ class EauAgurSensor(EauAgurEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, str] | None:
-        """Return the current reading date for the consumption sensor."""
+        """Return dates associated with the current sensor value."""
         reading_date = self.coordinator.data.get("consumption_date")
         if self.entity_description.key == "total_liters" and isinstance(reading_date, str):
             return {"reading_date": reading_date}
+        issue_date = self.coordinator.data.get("last_issued_invoice_date")
+        if self.entity_description.key == "last_issued_invoice" and isinstance(issue_date, str):
+            return {"issue_date": issue_date}
         return None
 
     @property

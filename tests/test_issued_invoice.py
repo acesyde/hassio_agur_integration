@@ -51,7 +51,10 @@ async def test_latest_date_spanning_pages(aresponses: ResponsesMockServer, contr
     for _ in pages:
         aresponses.add("example.com", "/webapi/Facture/listeFactures", "GET", page)
     async with aiohttp.ClientSession() as session:
-        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice(contract) == amount
+        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice(contract) == {
+            "amount": amount,
+            "issue_date": "2026-10-02T12:00:00+02:00",
+        }
     aresponses.assert_plan_strictly_followed()
 
 
@@ -67,7 +70,10 @@ async def test_old_invoice_pages_are_not_downloaded(aresponses: ResponsesMockSer
     """Even with fifty pages, crossing into an older date finishes the lookup."""
     add_page(aresponses, [invoice(), invoice("old", 90, "2026-01-02T00:00:00+01:00")], 100)
     async with aiohttp.ClientSession() as session:
-        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice("123") == 120
+        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice("123") == {
+            "amount": 120,
+            "issue_date": "2026-10-02T12:00:00+02:00",
+        }
     aresponses.assert_plan_strictly_followed()
 
 
@@ -79,7 +85,10 @@ async def test_invoice_order_uses_time_and_timezone(aresponses: ResponsesMockSer
         2,
     )
     async with aiohttp.ClientSession() as session:
-        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice("123") == 120
+        assert await AgurApiClient("example.com", session=session).get_last_issued_invoice("123") == {
+            "amount": 120,
+            "issue_date": "2026-10-02T11:00:00+00:00",
+        }
 
 
 @pytest.mark.asyncio
@@ -160,7 +169,7 @@ def coordinator():
         get_consumption=AsyncMock(return_value={"index": 10, "date": None}),
         get_last_invoice=AsyncMock(return_value=30),
         get_balance=AsyncMock(return_value=50),
-        get_last_issued_invoice=AsyncMock(return_value=120),
+        get_last_issued_invoice=AsyncMock(return_value={"amount": 120, "issue_date": "2026-10-02T12:00:00+02:00"}),
     )
     coordinator._email = "test@example.com"
     coordinator._password = "test-credential"  # noqa: S105
@@ -171,10 +180,14 @@ def coordinator():
 @pytest.mark.asyncio
 @pytest.mark.parametrize("amount", [120, 0, -20, None])
 async def test_invoice_and_payment_remain_separate(coordinator, amount):
-    coordinator._api_client.get_last_issued_invoice.return_value = amount
+    date = "2026-10-02T12:00:00+02:00" if amount is not None else None
+    coordinator._api_client.get_last_issued_invoice.return_value = (
+        {"amount": amount, "issue_date": date} if date else None
+    )
     data = await coordinator._async_update_data()
     assert data["last_invoice"] == 30
     assert data["last_issued_invoice"] == amount
+    assert data["last_issued_invoice_date"] == date
     sensors = {
         description.key: EauAgurSensor("entry", Mock(config_entry=Mock(entry_id="entry"), data=data), description)
         for description in SENSORS
@@ -188,6 +201,8 @@ async def test_invoice_and_payment_remain_separate(coordinator, amount):
     assert issued.state_class is None
     assert issued.unique_id == "entry_last_issued_invoice"
     assert issued.entity_id is None
+    assert issued.extra_state_attributes == ({"issue_date": date} if date else None)
+    assert sensors["last_invoice"].extra_state_attributes is None
 
 
 @pytest.mark.asyncio
@@ -197,6 +212,9 @@ async def test_invoice_error_keeps_other_readings(coordinator, failure):
     coordinator._api_client.get_last_issued_invoice.side_effect = failure
     data = await coordinator._async_update_data()
     assert data["last_issued_invoice"] is None
+    assert data["last_issued_invoice_date"] is None
+    sensor = EauAgurSensor("entry", Mock(config_entry=Mock(entry_id="entry"), data=data), SENSORS[-1])
+    assert sensor.extra_state_attributes is None
     assert data["last_invoice"] == 30
     assert data["consumption"] == 10
     assert data["balance"] == 50

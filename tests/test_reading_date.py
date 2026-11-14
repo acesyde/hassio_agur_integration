@@ -29,6 +29,7 @@ async def test_coordinator_keeps_index_and_current_date_together():
         "last_invoice": 20,
         "balance": 0,
         "last_issued_invoice": None,
+        "last_issued_invoice_date": None,
     }
 
     coordinator._api_client.get_consumption.return_value = {"index": 10, "date": None}

@@ -30,6 +30,8 @@ The `total_liters` sensor exposes a `reading_date` attribute when the actual rea
 
 The existing `last_invoice` sensor is now named “Last payment”: it retains its payment value, entity ID and history. The new “Last issued invoice” sensor requests invoices sorted by descending issue date and checks the returned order. Normally only the first page is needed; further pages are read only if the latest issue date spans several pages. A monthly direct debit can therefore differ from the invoice amount.
 
+The “Last issued invoice” sensor also exposes `issue_date`: its issue timestamp in ISO format with timezone. The attribute is removed when no invoice is available or its lookup fails, with no additional API request.
+
 The new sensor preserves zero invoices and negative credit notes. With no invoice or a failed read, it stays unknown rather than substituting the payment amount. It does not represent cumulative spending. Customized names and existing entity IDs are not automatically renamed; the new invoice history starts when installed.
 
 The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. A balance-reading error leaves the other data available; authentication errors are still handled at account level.

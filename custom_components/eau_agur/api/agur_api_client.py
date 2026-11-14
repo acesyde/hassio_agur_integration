@@ -233,7 +233,7 @@ class AgurApiClient:
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting last invoice.") from exception
 
-    async def get_last_issued_invoice(self, contract_id: str) -> float | None:
+    async def get_last_issued_invoice(self, contract_id: str) -> dict[str, float | str] | None:
         """Read newest invoices first, stopping once their issue date gets older."""
         seen = set()
         expected_total = None
@@ -295,7 +295,11 @@ class AgurApiClient:
                 if len(seen) == expected_total or (latest_date is not None and previous_date < latest_date):
                     if len(latest_amounts) > 1:
                         raise ValueError("Ambiguous latest invoice")
-                    return next(iter(latest_amounts), None)
+                    return (
+                        {"amount": next(iter(latest_amounts)), "issue_date": latest_date.isoformat()}
+                        if latest_date
+                        else None
+                    )
                 page += 1
         except AgurApiError as exception:
             if exception.args and exception.args[0] == 401:

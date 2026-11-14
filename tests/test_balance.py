@@ -102,6 +102,7 @@ async def test_balance_refresh_preserves_zero_and_credit(coordinator):
             "last_invoice": 20,
             "balance": amount,
             "last_issued_invoice": None,
+            "last_issued_invoice_date": None,
         }
     coordinator._api_client.get_balance.assert_awaited_with("123")
 
@@ -118,6 +119,7 @@ async def test_balance_failure_keeps_other_readings(coordinator, failure):
         "last_invoice": 20,
         "balance": None,
         "last_issued_invoice": None,
+        "last_issued_invoice_date": None,
     }
     coordinator._api_client.get_balance.side_effect = None
     coordinator._api_client.get_balance.return_value = 0
