@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
+import re
 import socket
 import uuid
 from datetime import date, datetime
@@ -21,6 +23,7 @@ from .const import (
     CLIENT_ID,
     DEFAULT_TIMEOUT,
     GENERATE_TOKEN_PATH,
+    GET_BALANCE_PATH,
     GET_CONSUMPTION_PATH,
     GET_DEFAULT_CONTRACT_PATH,
     GET_LAST_INVOICE_PATH,
@@ -82,7 +85,7 @@ class AgurApiClient:
         json_data: dict | None = None,
         headers: dict[str, str] | None = None,
         params: Mapping[str, str] | None = None,
-    ) -> dict[str, Any]:
+    ) -> Any:
         """Make a request to the Agur API."""
 
         url = URL.build(scheme="https", host=self._host, path=self._base_path).join(URL(uri))
@@ -228,6 +231,29 @@ class AgurApiClient:
             raise
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting last invoice.") from exception
+
+    async def get_balance(self, contract_id: str) -> float:
+        """Get the signed account balance, accepting numbers and monetary strings."""
+        try:
+            response = await self.request(f"{GET_BALANCE_PATH}{contract_id}", "GET")
+            if isinstance(response, str):
+                if re.fullmatch(r"[+-]?(?:[0-9]+|[0-9]{1,3}(?:\.[0-9]{3})+),[0-9]{1,2}", response):
+                    response = response.replace(".", "").replace(",", ".")
+                elif not re.fullmatch(r"[+-]?[0-9]+(?:\.[0-9]{1,2})?", response):
+                    raise ValueError("Unsupported monetary format")
+            elif isinstance(response, bool) or not isinstance(response, (int, float)):
+                raise ValueError("Expected a monetary amount")
+
+            balance = float(response)
+            if not math.isfinite(balance):
+                raise ValueError("Expected a finite amount")
+            return balance
+        except AgurApiError as exception:
+            if exception.args and exception.args[0] == 401:
+                raise AgurApiUnauthorizedError("Session expired while getting balance.") from exception
+            raise
+        except (ValueError, OverflowError) as exception:
+            raise AgurApiError("Invalid balance response.") from exception
 
     async def __aenter__(self) -> Any:
         return self

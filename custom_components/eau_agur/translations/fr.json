@@ -31,6 +31,9 @@
       },
       "last_invoice": {
         "name": "Dernière facture"
+      },
+      "balance": {
+        "name": "Solde du contrat"
       }
     }
   }

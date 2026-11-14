@@ -9,7 +9,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from custom_components.eau_agur.api.exceptions import AgurApiNoBillError
 
-from .api import AgurApiClient, AgurApiConnectionError, AgurApiUnauthorizedError
+from .api import AgurApiClient, AgurApiConnectionError, AgurApiError, AgurApiUnauthorizedError
 from .const import CONF_CONTRACT_NUMBER, DOMAIN, LOGGER, SCAN_INTERVAL_IN_MINUTES
 
 
@@ -55,6 +55,7 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
                 "consumption": consumption["index"] if consumption else None,
                 "consumption_date": consumption["date"] if consumption else None,
                 "last_invoice": await self.async_get_last_invoice(),
+                "balance": await self.async_get_balance(),
             }
 
             return result
@@ -74,6 +75,18 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
             return await self._api_client.get_consumption(self._contract_number)
         except AgurApiConnectionError as err:
             LOGGER.error(f"Error communicating with API: {err}")
+            return None
+
+    async def async_get_balance(self) -> float | None:
+        """Read balance independently of the current consumption and payment."""
+        if not self._contract_number:
+            return None
+        try:
+            return await self._api_client.get_balance(self._contract_number)
+        except AgurApiUnauthorizedError:
+            raise
+        except AgurApiError:
+            LOGGER.warning("Unable to retrieve the account balance")
             return None
 
     async def async_get_last_invoice(self) -> float | None:

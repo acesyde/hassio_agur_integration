@@ -66,6 +66,15 @@ SENSORS = [
         state_class=SensorStateClass.TOTAL,
         value_fn=read_last_invoice,
     ),
+    EauAgurEntityDescription(
+        key="balance",
+        translation_key="balance",
+        icon="mdi:bank-transfer",
+        native_unit_of_measurement=CURRENCY_EURO,
+        device_class=SensorDeviceClass.MONETARY,
+        state_class=SensorStateClass.TOTAL,
+        value_fn=lambda data: data.get("balance"),
+    ),
 ]
 
 
