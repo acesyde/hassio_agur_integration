@@ -23,8 +23,11 @@ English
 |-----------------------|------------------|------|--------------------|
 | `sensor.total_liters` | Number of liters | L    | :white_check_mark: |
 | `sensor.last_invoice` | Last invoice     | €    | :white_check_mark: |
+| `sensor.balance` | Account balance | € | :white_check_mark: |
 
 The `sensor.total_liters` sensor exposes a `reading_date` attribute when the actual reading date is provided and valid.
+
+The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. If retrieving it fails, only this amount becomes unknown.
 
 > [!NOTE]
 > Data is updated every 24h.

@@ -31,6 +31,9 @@
       },
       "last_invoice": {
         "name": "Last invoice"
+      },
+      "balance": {
+        "name": "Account balance"
       }
     }
   }

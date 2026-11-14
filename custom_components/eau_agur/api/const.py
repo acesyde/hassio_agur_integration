@@ -15,3 +15,4 @@ GENERATE_TOKEN_PATH: str = "Acces/generateToken"  # noqa: S105
 GET_DEFAULT_CONTRACT_PATH: str = "Abonnement/getContratParDefaut/"
 GET_CONSUMPTION_PATH: str = "TableauDeBord/derniereConsommationFacturee/"
 GET_LAST_INVOICE_PATH: str = "TableauDeBord/dernierReglement/"
+GET_BALANCE_PATH: str = "Facturation/soldeComptableContratAbonnement/"

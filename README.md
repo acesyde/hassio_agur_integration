@@ -23,8 +23,11 @@ Français |
 |-----------------------|--------------------------------|------|--------------------|
 | `sensor.total_liters` | Nombre de litres consommés     | L    | :white_check_mark: |
 | `sensor.last_invoice` | Montant de la dernière facture | €    | :white_check_mark: |
+| `sensor.balance` | Solde comptable du contrat | € | :white_check_mark: |
 
 Le capteur `sensor.total_liters` expose l’attribut `reading_date` avec la date réelle du relevé lorsqu’elle est fournie et valide.
+
+Le solde conserve le signe fourni par le portail, y compris zéro et les montants négatifs. Il ne représente pas le coût cumulé de l’eau. Si sa lecture échoue, seul ce montant devient inconnu.
 
 > [!NOTE]
 > Les données sont mises à jour toutes les 24h.
