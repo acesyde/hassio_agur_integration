@@ -26,6 +26,7 @@ from .const import (
     GET_BALANCE_PATH,
     GET_CONSUMPTION_PATH,
     GET_DEFAULT_CONTRACT_PATH,
+    GET_ISSUED_INVOICES_PATH,
     GET_LAST_INVOICE_PATH,
     LOGGER,
     LOGIN_PATH,
@@ -218,7 +219,7 @@ class AgurApiClient:
             raise AgurApiError("Error occurred while getting consumption.") from exception
 
     async def get_last_invoice(self, contract_id: str) -> float:
-        """Get last invoice."""
+        """Get the last payment amount (legacy method name)."""
         try:
             response = await self.request(f"{GET_LAST_INVOICE_PATH}{contract_id}", "GET")
 
@@ -231,6 +232,77 @@ class AgurApiClient:
             raise
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting last invoice.") from exception
+
+    async def get_last_issued_invoice(self, contract_id: str) -> float | None:
+        """Read newest invoices first, stopping once their issue date gets older."""
+        seen = set()
+        expected_total = None
+        latest_date = None
+        previous_date = None
+        latest_amounts = set()
+        page = 0
+        try:
+            while True:
+                response = await self.request(
+                    GET_ISSUED_INVOICES_PATH,
+                    params={
+                        "numeroContrat": str(contract_id),
+                        "recherche": "",
+                        "tri": "dateEmissionFacture",
+                        "triDecroissant": "true",
+                        "indexPage": str(page),
+                        "nbElements": "2",
+                        "dateDebut": "",
+                        "dateFin": "",
+                        "listeColonnes": "",
+                        "profondeurHistorique": "-1",
+                    },
+                )
+                if (
+                    not isinstance(response, dict)
+                    or not isinstance(response.get("resultats"), list)
+                    or type(response.get("nbTotalResultats")) is not int
+                    or response["nbTotalResultats"] < 0
+                    or (expected_total is not None and response["nbTotalResultats"] != expected_total)
+                ):
+                    raise ValueError("Invalid invoice list")
+                expected_total = response["nbTotalResultats"]
+                rows = response["resultats"]
+                for row in rows:
+                    if (
+                        not isinstance(row, dict)
+                        or not isinstance(row.get("numeroFactureClient"), str)
+                        or not row["numeroFactureClient"]
+                        or type(row.get("montantTTCFacture")) not in (int, float)
+                    ):
+                        raise ValueError("Invalid invoice")
+                    issued = datetime.fromisoformat(row["dateEmissionFacture"])
+                    amount = float(row["montantTTCFacture"])
+                    if (
+                        issued.tzinfo is None
+                        or not math.isfinite(amount)
+                        or row["numeroFactureClient"] in seen
+                        or (previous_date is not None and issued > previous_date)
+                    ):
+                        raise ValueError("Invalid, repeated or unsorted invoice")
+                    seen.add(row["numeroFactureClient"])
+                    latest_date = latest_date or issued
+                    previous_date = issued
+                    if issued == latest_date:
+                        latest_amounts.add(amount)
+                if len(seen) > expected_total or (not rows and len(seen) < expected_total):
+                    raise ValueError("Incomplete invoice list")
+                if len(seen) == expected_total or (latest_date is not None and previous_date < latest_date):
+                    if len(latest_amounts) > 1:
+                        raise ValueError("Ambiguous latest invoice")
+                    return next(iter(latest_amounts), None)
+                page += 1
+        except AgurApiError as exception:
+            if exception.args and exception.args[0] == 401:
+                raise AgurApiUnauthorizedError("Session expired while getting invoices.") from exception
+            raise
+        except (ValueError, TypeError, KeyError, OverflowError) as exception:
+            raise AgurApiError("Invalid issued-invoice response.") from exception
 
     async def get_balance(self, contract_id: str) -> float:
         """Get the signed account balance, accepting numbers and monetary strings."""

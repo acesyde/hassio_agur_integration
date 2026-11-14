@@ -30,7 +30,10 @@
         "name": "Total liters"
       },
       "last_invoice": {
-        "name": "Last invoice"
+        "name": "Last payment"
+      },
+      "last_issued_invoice": {
+        "name": "Last issued invoice"
       },
       "balance": {
         "name": "Account balance"

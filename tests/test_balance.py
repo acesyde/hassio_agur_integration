@@ -83,6 +83,7 @@ def coordinator():
         get_consumption=AsyncMock(return_value={"index": 10, "date": "2026-11-14"}),
         get_last_invoice=AsyncMock(return_value=20),
         get_balance=AsyncMock(return_value=50),
+        get_last_issued_invoice=AsyncMock(return_value=None),
     )
     coordinator._email = "test@example.com"
     coordinator._password = "test-credential"  # noqa: S105
@@ -95,7 +96,13 @@ async def test_balance_refresh_preserves_zero_and_credit(coordinator):
     for amount in (50, 0, -10):
         coordinator._api_client.get_balance.return_value = amount
         data = await coordinator._async_update_data()
-        assert data == {"consumption": 10, "consumption_date": "2026-11-14", "last_invoice": 20, "balance": amount}
+        assert data == {
+            "consumption": 10,
+            "consumption_date": "2026-11-14",
+            "last_invoice": 20,
+            "balance": amount,
+            "last_issued_invoice": None,
+        }
     coordinator._api_client.get_balance.assert_awaited_with("123")
 
 
@@ -105,7 +112,13 @@ async def test_balance_failure_keeps_other_readings(coordinator, failure):
     assert (await coordinator._async_update_data())["balance"] == 50
     coordinator._api_client.get_balance.side_effect = failure
     data = await coordinator._async_update_data()
-    assert data == {"consumption": 10, "consumption_date": "2026-11-14", "last_invoice": 20, "balance": None}
+    assert data == {
+        "consumption": 10,
+        "consumption_date": "2026-11-14",
+        "last_invoice": 20,
+        "balance": None,
+        "last_issued_invoice": None,
+    }
     coordinator._api_client.get_balance.side_effect = None
     coordinator._api_client.get_balance.return_value = 0
     assert (await coordinator._async_update_data())["balance"] == 0

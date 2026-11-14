@@ -37,7 +37,7 @@ def read_consumption(data: dict[str, Any]):
 
 
 def read_last_invoice(data: dict[str, Any]):
-    """Read consumption from data."""
+    """Read the last payment amount under its legacy key."""
 
     last_invoice: float | None = data["last_invoice"]
 
@@ -74,6 +74,14 @@ SENSORS = [
         device_class=SensorDeviceClass.MONETARY,
         state_class=SensorStateClass.TOTAL,
         value_fn=lambda data: data.get("balance"),
+    ),
+    EauAgurEntityDescription(
+        key="last_issued_invoice",
+        translation_key="last_issued_invoice",
+        icon="mdi:receipt-text",
+        native_unit_of_measurement=CURRENCY_EURO,
+        device_class=SensorDeviceClass.MONETARY,
+        value_fn=lambda data: data.get("last_issued_invoice"),
     ),
 ]
 
