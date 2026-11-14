@@ -97,7 +97,7 @@ class AgurApiClient:
             headers["ConversationId"] = self._conversation_id
 
         if self._token is not None:
-            headers["Token"] = self._token
+            headers.setdefault("Token", self._token)
 
         if self._session is None:
             self._session = aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=False, quote_cookie=False))
