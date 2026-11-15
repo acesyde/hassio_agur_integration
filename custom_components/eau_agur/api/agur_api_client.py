@@ -25,6 +25,7 @@ from .const import (
     GENERATE_TOKEN_PATH,
     GET_BALANCE_PATH,
     GET_CONSUMPTION_PATH,
+    GET_CONTRACTS_PATH,
     GET_DEFAULT_CONTRACT_PATH,
     GET_ISSUED_INVOICES_PATH,
     GET_LAST_INVOICE_PATH,
@@ -194,6 +195,61 @@ class AgurApiClient:
 
         except AgurApiError as exception:
             raise AgurApiError("Error occurred while getting default contract.") from exception
+
+    async def get_contracts(self) -> dict[str, str]:
+        """List every accessible contract, preserving its textual identifier."""
+        contracts = {}
+        expected_total = None
+        page = 0
+        try:
+            while True:
+                response = await self.request(
+                    GET_CONTRACTS_PATH,
+                    params={
+                        "userWebId": "",
+                        "recherche": "",
+                        "tri": "NumeroContrat",
+                        "triDecroissant": "false",
+                        "indexPage": str(page),
+                        "nbElements": "25",
+                    },
+                )
+                if (
+                    not isinstance(response, dict)
+                    or not isinstance(response.get("resultats"), list)
+                    or type(response.get("nbTotalResultats")) is not int
+                    or response["nbTotalResultats"] < 0
+                    or (expected_total is not None and response["nbTotalResultats"] != expected_total)
+                ):
+                    raise ValueError("Invalid contract list")
+                expected_total = response["nbTotalResultats"]
+                rows = response["resultats"]
+                for row in rows:
+                    if (
+                        not isinstance(row, dict)
+                        or not isinstance(row.get("numeroContrat"), str)
+                        or not row["numeroContrat"].strip()
+                    ):
+                        raise ValueError("Invalid contract identifier")
+                    number = row["numeroContrat"]
+                    if number in contracts:
+                        raise ValueError("Repeated contract")
+                    address = row.get("adresseLivraisonConstruite")
+                    status = row.get("libelleEtatContrat")
+                    contracts[number] = " — ".join(
+                        part for part in (number, address, status) if isinstance(part, str) and part
+                    )
+                if len(contracts) > expected_total or (not rows and len(contracts) < expected_total):
+                    raise ValueError("Incomplete contract list")
+                if len(contracts) == expected_total:
+                    return contracts
+                page += 1
+        except AgurApiError as exception:
+            if exception.args and exception.args[0] == 401:
+                raise AgurApiUnauthorizedError("Session expired while listing contracts.") from exception
+            raise
+        except (ValueError, TypeError, KeyError) as exception:
+            raise AgurApiError("Invalid contract-list response.") from exception
 
     async def get_consumption(self, contract_id: str) -> dict[str, Any]:
         """Get consumption."""

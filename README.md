@@ -36,6 +36,12 @@ Le nouveau capteur conserve les factures à zéro et les avoirs négatifs. En l�
 
 Le solde conserve le signe fourni par le portail, y compris zéro et les montants négatifs. Il ne représente pas le coût cumulé de l’eau. Une erreur de lecture du solde laisse les autres données disponibles ; les erreurs d’authentification restent traitées au niveau du compte.
 
+### Plusieurs contrats
+
+Chaque contrat correspond à une entrée de l’intégration et à un appareil distinct. Après connexion, choisissez le contrat à ajouter ; avec un seul contrat, cette étape est automatique. Pour un autre contrat du même compte, ajoutez à nouveau l’intégration et sélectionnez-le. Un contrat déjà configuré chez le même fournisseur ne peut pas être ajouté deux fois.
+
+Les installations existantes conservent leur contrat, leurs identifiants, noms personnalisés et historiques, sans suppression ni reconfiguration. Les nouveaux appareils portent le nom du fournisseur et le numéro de contrat. Chaque entrée garde sa session et son rafraîchissement indépendants ; un changement de mot de passe doit être reporté sur chaque entrée du compte. Les contrats sont proposés avec leur état lorsque le portail le fournit, y compris les contrats résiliés.
+
 ### Identifiants des entités
 
 Les clés ci-dessus ne sont pas des identifiants complets. Pour les **nouvelles entités**, Home Assistant génère les identifiants `sensor.…` selon le format choisi dans ses paramètres : pièce, appareil parent, appareil et entité. Les éléments sans valeur sont omis ; les noms dépendent des informations disponibles et de la langue choisie pour les identifiants.

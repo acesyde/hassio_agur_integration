@@ -5,7 +5,8 @@
         "description": "Si vous avez besoin d'aide pour la configuration, regardez ici : {documentation_url}",
         "data": {
           "email": "Email",
-          "password": "Mot de passe"
+          "password": "Mot de passe",
+          "provider": "Fournisseur"
         }
       },
       "reconfigure": {
@@ -13,15 +14,24 @@
         "data": {
           "password": "Mot de passe"
         }
+      },
+      "contract": {
+        "description": "Choisissez le contrat à ajouter. Pour ajouter un autre contrat, ajoutez à nouveau l’intégration.",
+        "data": {
+          "contract_number": "Contrat"
+        }
       }
     },
     "error": {
       "auth": "Mauvais email ou mot de passe.",
       "connection": "Impossible de se connecter au serveur.",
-      "unknown": "Une erreur inconnue s'est produite."
+      "unknown": "Une erreur inconnue s'est produite.",
+      "invalid_contract": "Choisissez un contrat de la liste."
     },
     "abort": {
-      "reconfigure_failed": "Échec de la reconfiguration de l'intégration."
+      "reconfigure_failed": "Échec de la reconfiguration de l'intégration.",
+      "already_configured": "Ce contrat est déjà configuré pour ce fournisseur.",
+      "no_contracts": "Aucun contrat accessible sur ce compte."
     }
   },
   "entity": {

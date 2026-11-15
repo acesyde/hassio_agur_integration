@@ -5,7 +5,8 @@
         "description": "If you need help with the configuration have a look here: {documentation_url}",
         "data": {
           "email": "Email",
-          "password": "Password"
+          "password": "Password",
+          "provider": "Provider"
         }
       },
       "reconfigure": {
@@ -13,15 +14,24 @@
         "data": {
           "password": "Password"
         }
+      },
+      "contract": {
+        "description": "Choose the contract to add. To add another contract, add the integration again.",
+        "data": {
+          "contract_number": "Contract"
+        }
       }
     },
     "error": {
       "auth": "Email/Password is wrong.",
       "connection": "Unable to connect to the server.",
-      "unknown": "Unknown error occurred."
+      "unknown": "Unknown error occurred.",
+      "invalid_contract": "Choose a contract from the list."
     },
     "abort": {
-      "reconfigure_failed": "Failed to reconfigure the integration."
+      "reconfigure_failed": "Failed to reconfigure the integration.",
+      "already_configured": "This contract is already configured for this provider.",
+      "no_contracts": "No accessible contracts were found for this account."
     }
   },
   "entity": {

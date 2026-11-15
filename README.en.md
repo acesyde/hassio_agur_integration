@@ -36,6 +36,12 @@ The new sensor preserves zero invoices and negative credit notes. With no invoic
 
 The balance retains the portal's sign, including zero and negative amounts. It is not the cumulative cost of water. A balance-reading error leaves the other data available; authentication errors are still handled at account level.
 
+### Multiple contracts
+
+Each contract has its own integration entry and device. After signing in, choose the contract to add; a single contract is selected automatically. To add another contract from the same account, add the integration again and select it. The same contract cannot be added twice for the same provider.
+
+Existing installations retain their contract, identifiers, customized names and history, without removal or reconfiguration. New devices include the provider name and contract number. Each entry keeps an independent session and refresh cycle; password changes must be applied to each entry for the account. Contracts show their status when provided by the portal, including terminated contracts.
+
 ### Entity IDs
 
 The keys above are not full entity IDs. For **new entities**, Home Assistant generates `sensor.…` IDs using the format selected in its settings: area, parent device, device and entity. Parts without a value are omitted; names depend on the available information and the selected entity-ID language.

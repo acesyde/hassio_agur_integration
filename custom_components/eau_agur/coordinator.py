@@ -32,6 +32,7 @@ class EauAgurDataUpdateCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             logger=LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(minutes=SCAN_INTERVAL_IN_MINUTES),
         )
