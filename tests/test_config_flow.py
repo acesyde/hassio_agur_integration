@@ -37,11 +37,13 @@ async def test_authentication_attempt_detaches_session(step, failure):
         generate_temporary_token=AsyncMock(),
         login=AsyncMock(side_effect=failure),
         get_default_contract=AsyncMock(return_value="12345"),
+        get_contracts=AsyncMock(return_value={"12345": "12345"}),
     )
     entry = Mock(data={"email": "test@example.com", "password": "old", "provider": "agur"})
     flow = config_flow.EauAgurFlowHandler()
     flow.hass = SimpleNamespace(config_entries=Mock(async_get_entry=Mock(return_value=entry)))
     flow.context = {"entry_id": "entry"}
+    flow._async_current_entries = Mock(return_value=[])
     flow.async_set_unique_id = AsyncMock()
     flow._abort_if_unique_id_configured = Mock()
     flow.async_create_entry = Mock(return_value={"type": "create_entry"})
@@ -77,6 +79,7 @@ async def test_duplicate_contract_detaches_session():
         generate_temporary_token=AsyncMock(),
         login=AsyncMock(),
         get_default_contract=AsyncMock(return_value="12345"),
+        get_contracts=AsyncMock(return_value={"12345": "12345"}),
     )
     with (
         patch.object(config_flow, "async_create_clientsession", return_value=session),

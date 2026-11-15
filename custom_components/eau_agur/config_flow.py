@@ -56,18 +56,17 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_PASSWORD],
                 )
 
-                default_contract_id = await api_client.get_default_contract()
+                contracts = await api_client.get_contracts()
+                default_contract_id = await api_client.get_default_contract() if contracts else None
 
-                data = {
+                self._contract_data = {
                     CONF_EMAIL: user_input[CONF_EMAIL],
                     CONF_PASSWORD: user_input[CONF_PASSWORD],
                     CONF_PROVIDER: user_input[CONF_PROVIDER],
-                    CONF_CONTRACT_NUMBER: default_contract_id,
                 }
 
-                await self.async_set_unique_id(default_contract_id)
-
-                self._abort_if_unique_id_configured()
+                self._contracts = contracts
+                self._default_contract = default_contract_id
 
             except AgurApiUnauthorizedError as exception:
                 LOGGER.warning(exception)
@@ -82,7 +81,11 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 _errors["base"] = "unknown"
 
             else:
-                return self.async_create_entry(title="EAU par Agur", data=data)
+                if not contracts:
+                    return self.async_abort(reason="no_contracts")
+                if len(contracts) == 1:
+                    return await self.async_step_contract({CONF_CONTRACT_NUMBER: next(iter(contracts))})
+                return await self.async_step_contract()
             finally:
                 if session is not None:
                     session.detach()
@@ -113,6 +116,48 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors=_errors,
+        )
+
+    async def async_step_contract(self, user_input=None) -> config_entries.ConfigFlowResult:
+        """Choose one of the contracts returned by the authenticated account."""
+        errors = {}
+        if user_input is not None:
+            number = user_input.get(CONF_CONTRACT_NUMBER)
+            if not isinstance(number, str) or number not in self._contracts:
+                errors["base"] = "invalid_contract"
+            else:
+                provider = self._contract_data[CONF_PROVIDER]
+                await self.async_set_unique_id(f"{provider}:{number}")
+                self._abort_if_unique_id_configured()
+                # Legacy entries identify themselves by contract alone; keep them intact.
+                if any(
+                    entry.data.get(CONF_PROVIDER) == provider and entry.data.get(CONF_CONTRACT_NUMBER) == number
+                    for entry in self._async_current_entries()
+                ):
+                    return self.async_abort(reason="already_configured")
+                return self.async_create_entry(
+                    title=f"{PROVIDERS[provider]['display_name']} — {number}",
+                    data={**self._contract_data, CONF_CONTRACT_NUMBER: number},
+                )
+        default = self._default_contract
+        return self.async_show_form(
+            step_id="contract",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_CONTRACT_NUMBER, **({"default": default} if default in self._contracts else {})
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[
+                                selector.SelectOptionDict(value=number, label=label)
+                                for number, label in self._contracts.items()
+                            ],
+                            mode=selector.SelectSelectorMode.DROPDOWN,
+                        )
+                    ),
+                }
+            ),
+            errors=errors,
         )
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None) -> config_entries.ConfigFlowResult:

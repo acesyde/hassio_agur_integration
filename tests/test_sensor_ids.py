@@ -86,3 +86,63 @@ async def test_new_sensor_uses_configured_entity_id_format(registry, parts, expe
         object_id_base="Solde du contrat",
     )
     assert entry.entity_id == expected
+
+
+@pytest.mark.asyncio
+async def test_adding_contract_preserves_legacy_device_and_entities(registry):
+    hass, entities = registry
+    devices = dr.async_get(hass)
+    entries = {
+        "legacy": Mock(
+            entry_id="legacy",
+            unique_id="001",
+            title="EAU par Agur",
+            data={"provider": "agur", "contract_number": "001"},
+            disabled_by=None,
+            pref_disable_new_entities=False,
+        ),
+        "new": Mock(
+            entry_id="new",
+            unique_id="agur:002",
+            title="Eau par Agur — 002",
+            data={"provider": "agur", "contract_number": "002"},
+            disabled_by=None,
+            pref_disable_new_entities=False,
+        ),
+    }
+    hass.config_entries.async_get_entry.side_effect = entries.get
+    snapshots = []
+    original_device = None
+    for entry_id in ("legacy", "new", "legacy"):
+        coordinator = Mock(config_entry=entries[entry_id], data={"balance": 10 if entry_id == "legacy" else 20})
+        for description in SENSORS:
+            sensor = EauAgurSensor(entry_id, coordinator, description)
+            device = devices.async_get_or_create(config_entry_id=entry_id, **sensor.device_info)
+            registered = entities.async_get_or_create(
+                "sensor",
+                DOMAIN,
+                sensor.unique_id,
+                config_entry=entries[entry_id],
+                device_id=device.id,
+                suggested_object_id=f"{entry_id}_{description.key}",
+            )
+            if entry_id == "legacy" and len(snapshots) < len(SENSORS):
+                registered = entities.async_update_entity(
+                    registered.entity_id,
+                    new_entity_id=f"sensor.custom_{description.key}",
+                    name=f"Custom {description.key}",
+                    disabled_by=er.RegistryEntryDisabler.USER,
+                )
+                snapshots.append((registered.id, registered.entity_id, registered.name, registered.disabled_by))
+                original_device = device.id
+                devices.async_update_device(device.id, name_by_user="Maison")
+            elif entry_id == "legacy":
+                assert (registered.id, registered.entity_id, registered.name, registered.disabled_by) in snapshots
+                assert device.id == original_device
+                assert device.name == "EAU par Agur" and device.name_by_user == "Maison"
+            else:
+                assert device.id != original_device
+                assert device.name == "Eau par Agur — 002"
+        assert EauAgurSensor(entry_id, coordinator, SENSORS[2]).native_value == (10 if entry_id == "legacy" else 20)
+    assert len(devices.devices) == 2
+    assert len(entities.entities) == 2 * len(SENSORS)
