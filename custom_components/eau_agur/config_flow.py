@@ -206,7 +206,7 @@ class EauAgurFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 # Update entry data - only password is updated
                 updated_data = {**entry.data, CONF_PASSWORD: password}
 
-                return self.async_update_reload_and_abort(entry, data=updated_data)
+                return self.async_update_and_abort(entry, data=updated_data)
 
             except AgurApiUnauthorizedError as exception:
                 LOGGER.warning(exception)

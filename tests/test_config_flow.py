@@ -5,8 +5,10 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from homeassistant import config_entries
+from homeassistant.core import HomeAssistant
 
-from custom_components.eau_agur import config_flow
+from custom_components.eau_agur import async_reload_entry, config_flow
 from custom_components.eau_agur.api import AgurApiConnectionError, AgurApiUnauthorizedError
 
 
@@ -47,7 +49,7 @@ async def test_authentication_attempt_detaches_session(step, failure):
     flow.async_set_unique_id = AsyncMock()
     flow._abort_if_unique_id_configured = Mock()
     flow.async_create_entry = Mock(return_value={"type": "create_entry"})
-    flow.async_update_reload_and_abort = Mock(return_value={"type": "abort"})
+    flow.async_update_and_abort = Mock(return_value={"type": "abort"})
     flow.async_show_form = Mock(return_value={"type": "form"})
     user_input = {"email": "test@example.com", "password": "new", "provider": "agur"}
 
@@ -88,3 +90,58 @@ async def test_duplicate_contract_detaches_session():
     ):
         await flow.async_step_user({"email": "test@example.com", "password": "password", "provider": "agur"})
     session.detach.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "password,failure,reloads",
+    [("new", None, 1), ("old", None, 0), ("new", AgurApiUnauthorizedError("invalid credentials"), 0)],
+)
+async def test_reconfigure_uses_update_listener_without_deprecation(tmp_path, password, failure, reloads):
+    hass = HomeAssistant(str(tmp_path))
+    hass.config_entries = config_entries.ConfigEntries(hass, {})
+    entry = config_entries.ConfigEntry(
+        domain="eau_agur",
+        version=1,
+        minor_version=1,
+        source="user",
+        title="EAU par Agur",
+        unique_id="001",
+        data={"email": "test@example.com", "password": "old", "provider": "agur", "contract_number": "001"},
+        options={},
+        discovery_keys={},
+        subentries_data=None,
+    )
+    hass.config_entries._entries[entry.entry_id] = entry
+    entry.add_update_listener(async_reload_entry)
+    flow = config_flow.EauAgurFlowHandler()
+    flow.hass = hass
+    flow.handler = "eau_agur"
+    flow.context = {"source": "reconfigure", "entry_id": entry.entry_id}
+    session = Mock()
+    client = Mock(generate_temporary_token=AsyncMock(), login=AsyncMock(side_effect=failure))
+    with (
+        patch.object(config_flow, "async_create_clientsession", return_value=session),
+        patch.object(config_flow, "AgurApiClient", return_value=client),
+        patch.object(config_entries, "report_usage") as report,
+        patch.object(hass.config_entries, "_async_schedule_save"),
+        patch.object(hass.config_entries, "async_schedule_reload") as schedule,
+    ):
+        result = await flow.async_step_reconfigure({"password": password})
+        await hass.async_block_till_done()
+        report.assert_not_called()
+        assert schedule.call_count == reloads
+        if reloads:
+            schedule.assert_called_once_with(entry.entry_id)
+    if failure:
+        assert result["errors"] == {"base": "auth"}
+    else:
+        assert result["reason"] == "reconfigure_successful"
+    assert entry.data == {
+        "email": "test@example.com",
+        "password": "old" if failure else password,
+        "provider": "agur",
+        "contract_number": "001",
+    }
+    assert entry.unique_id == "001"
+    session.detach.assert_called_once()
